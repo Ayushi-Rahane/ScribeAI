@@ -66,7 +66,7 @@ const DashboardSidebar = () => {
                 </div>
             </div>
 
-            {/* Support */}
+            {/* Support 
             <div className="px-4 mt-8">
                 <p className="text-xs uppercase text-gray-500 mb-3 tracking-wider">Support</p>
 
@@ -79,7 +79,7 @@ const DashboardSidebar = () => {
                         />
                     ))}
                 </div>
-            </div>
+            </div>*/}
 
             {/* User Card */}
             <div className="mt-auto border-t border-white/10 p-4">

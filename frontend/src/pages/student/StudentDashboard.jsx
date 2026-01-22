@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import {
     FaBell,
     FaPlus
@@ -9,7 +10,14 @@ import TipsCard from "../../components/student/dashboard/TipsCard";
 import UpcomingSchedule from "../../components/student/dashboard/UpcomingSchedule";
 import StatsCards from "../../components/student/dashboard/StatsCards";
 import ActiveRequest from "../../components/student/dashboard/ActiveRequest";
+
 const StudentDashboard = () => {
+    const navigate = useNavigate();
+
+    const handleNewRequest = () => {
+        navigate('/student/request');
+    };
+
     return (
         <div className="min-h-screen bg-[#F7F9FC] flex">
 
@@ -24,7 +32,10 @@ const StudentDashboard = () => {
                     <h2 className="text-lg font-semibold">Dashboard</h2>
 
                     <div className="flex items-center gap-4">
-                        <button className="bg-[#F63049] text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2">
+                        <button
+                            onClick={handleNewRequest}
+                            className="bg-[#F63049] text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 hover:bg-[#e12a40] transition"
+                        >
                             <FaPlus /> New Request
                         </button>
                         <FaBell className="text-gray-500" />
