@@ -23,11 +23,6 @@ const menuItems = [
     { label: "Profile", icon: <FaUser />, path: "/student/profile" },
 ];
 
-const supportItems = [
-    { label: "Feedback", icon: <FaCommentDots />, path: "/feedback" },
-    { label: "Settings", icon: <FaCog />, path: "/settings" },
-];
-
 const DashboardSidebar = () => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -35,12 +30,9 @@ const DashboardSidebar = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const handleLogout = () => {
-        // Clear any stored user data (localStorage, sessionStorage, etc.)
         localStorage.removeItem('user');
         localStorage.removeItem('token');
         sessionStorage.clear();
-
-        // Navigate to login page
         navigate('/login');
     };
 
@@ -70,15 +62,16 @@ const DashboardSidebar = () => {
                 />
             )}
 
-            {/* Sidebar */}
+            {/* Sidebar - Using CSS Grid for proper layout */}
             <aside className={`
                 w-64 bg-gradient-to-b from-[#0F1E33] to-[#121C2D] text-gray-300
-                fixed left-0 top-0 h-screen z-40 transition-transform duration-300 flex flex-col
+                fixed left-0 top-0 h-screen z-40 transition-transform duration-300
+                grid grid-rows-[auto_1fr_auto]
                 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
             `}>
 
-                {/* Logo - Fixed at top */}
-                <div className="flex items-center gap-3 px-6 py-6 text-white text-xl font-bold flex-shrink-0">
+                {/* Logo - Row 1: Auto height */}
+                <div className="flex items-center gap-3 px-6 py-6 text-white text-xl font-bold">
                     <svg
                         className="w-8 h-8"
                         viewBox="0 0 96 96"
@@ -92,14 +85,12 @@ const DashboardSidebar = () => {
                             stroke="#F63049"
                             strokeWidth="1"></path>
                     </svg>
-
                     ScribeAI
                 </div>
 
-                {/* Menu - Scrollable section */}
-                <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4">
+                {/* Menu - Row 2: Takes remaining space and scrolls */}
+                <div className="overflow-y-auto px-4 py-4">
                     <p className="text-xs uppercase text-gray-500 mb-3 tracking-wider">Menu</p>
-
                     <div className="space-y-1">
                         {menuItems.map((item) => (
                             <SidebarItem
@@ -112,9 +103,8 @@ const DashboardSidebar = () => {
                     </div>
                 </div>
 
-                {/* User Card - Fixed at bottom */}
-                <div className="border-t border-white/10 p-4 flex-shrink-0">
-
+                {/* User Card - Row 3: Auto height, always visible */}
+                <div className="border-t border-white/10 p-4">
                     <div className="flex items-center gap-3 mb-3">
                         <div className="bg-[#F63049] w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold">
                             JD
@@ -127,7 +117,7 @@ const DashboardSidebar = () => {
 
                     <button
                         onClick={handleLogout}
-                        className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition"
+                        className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition w-full"
                     >
                         <FaSignOutAlt />
                         Log Out
