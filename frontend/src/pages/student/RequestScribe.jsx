@@ -33,12 +33,12 @@ const RequestScribe = () => {
                     <span className="pl-12 md:pl-0">Request Scribe</span>
                 </div>
 
-                <div className="p-10">
+                <div className="p-4 md:p-10">
 
                     {/* Center header */}
-                    <div className="text-center mb-10">
-                        <h1 className="text-3xl font-bold text-[#111F35] mb-2">Request a Scribe</h1>
-                        <p className="text-gray-500">
+                    <div className="text-center mb-6 md:mb-10">
+                        <h1 className="text-2xl md:text-3xl font-bold text-[#111F35] mb-2">Request a Scribe</h1>
+                        <p className="text-sm md:text-base text-gray-500">
                             Fill in the details below to get matched with a verified volunteer.
                         </p>
                     </div>
@@ -65,7 +65,7 @@ const Stepper = ({ currentStep }) => {
     const steps = ["Exam Details", "Scribe Requirements", "Review"];
 
     return (
-        <div className="flex items-center justify-center max-w-3xl mx-auto">
+        <div className="flex items-center justify-center max-w-3xl mx-auto mb-6 md:mb-8 overflow-x-auto pb-2">
 
             {steps.map((label, index) => {
                 const stepNum = index + 1;
@@ -74,10 +74,10 @@ const Stepper = ({ currentStep }) => {
 
                 return (
                     <React.Fragment key={label}>
-                        <div className="flex flex-col items-center">
+                        <div className="flex flex-col items-center flex-shrink-0">
 
                             <div
-                                className={`w-9 h-9 flex items-center justify-center rounded-full text-sm font-semibold
+                                className={`w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-full text-xs md:text-sm font-semibold
                   ${isCompleted
                                         ? "bg-[#F63049] text-white"
                                         : isActive
@@ -86,7 +86,7 @@ const Stepper = ({ currentStep }) => {
                                     }`}
                             >
                                 {isCompleted ? (
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                     </svg>
                                 ) : (
@@ -95,7 +95,7 @@ const Stepper = ({ currentStep }) => {
                             </div>
 
                             <span
-                                className={`mt-2 text-sm ${isActive || isCompleted ? "text-[#F63049] font-medium" : "text-gray-400"
+                                className={`mt-2 text-xs md:text-sm whitespace-nowrap ${isActive || isCompleted ? "text-[#F63049] font-medium" : "text-gray-400"
                                     }`}
                             >
                                 {label}
@@ -103,7 +103,7 @@ const Stepper = ({ currentStep }) => {
                         </div>
 
                         {index !== steps.length - 1 && (
-                            <div className={`w-28 h-[2px] mx-4 mb-6 ${isCompleted ? "bg-[#F63049]" : "bg-gray-200"
+                            <div className={`w-12 md:w-28 h-[2px] mx-2 md:mx-4 mb-6 flex-shrink-0 ${isCompleted ? "bg-[#F63049]" : "bg-gray-200"
                                 }`} />
                         )}
                     </React.Fragment>

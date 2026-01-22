@@ -97,10 +97,10 @@ const DashboardSidebar = () => {
                 </div>
 
                 {/* Menu - Scrollable section */}
-                <div className="flex-1 overflow-y-auto px-4 py-4">
+                <div className="flex-1 overflow-y-auto px-4 py-4 pb-4">
                     <p className="text-xs uppercase text-gray-500 mb-3 tracking-wider">Menu</p>
 
-                    <div className="space-y-1">
+                    <div className="space-y-1 pb-4">
                         {menuItems.map((item) => (
                             <SidebarItem
                                 key={item.label}
