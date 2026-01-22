@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
     FaHome,
     FaFileAlt,
@@ -28,7 +28,19 @@ const supportItems = [
 
 const DashboardSidebar = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const currentPath = location.pathname;
+
+    const handleLogout = () => {
+        // Clear any stored user data (localStorage, sessionStorage, etc.)
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        sessionStorage.clear();
+
+        // Navigate to login page
+        navigate('/login');
+    };
+
     return (
         <aside className="w-64 bg-gradient-to-b from-[#0F1E33] to-[#121C2D] text-gray-300 flex flex-col fixed left-0 top-0 h-screen overflow-y-auto">
 
@@ -94,7 +106,10 @@ const DashboardSidebar = () => {
                     </div>
                 </div>
 
-                <button className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition">
+                <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition"
+                >
                     <FaSignOutAlt />
                     Log Out
                 </button>
