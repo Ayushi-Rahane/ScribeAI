@@ -26,10 +26,10 @@ const RequestScribe = () => {
         <div className="min-h-screen bg-[#F7F9FC] flex">
             <StudentSidebar />
 
-            <div className="flex-1 ml-64">
+            <div className="flex-1 md:ml-64">
 
                 {/* Top bar */}
-                <div className="h-14 border-b bg-white flex items-center px-6 text-[#111F35] font-semibold">
+                <div className="h-14 border-b bg-white flex items-center px-4 md:px-6 text-[#111F35] font-semibold">
                     Request Scribe
                 </div>
 

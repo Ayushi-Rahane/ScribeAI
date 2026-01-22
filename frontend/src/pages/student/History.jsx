@@ -92,13 +92,13 @@ const History = () => {
         <div className="min-h-screen bg-[#F7F9FC] flex">
             <StudentSidebar />
 
-            <div className="flex-1 ml-64">
+            <div className="flex-1 md:ml-64">
                 {/* Top Bar */}
-                <div className="h-14 border-b bg-white flex items-center px-6 text-[#111F35] font-semibold">
+                <div className="h-14 border-b bg-white flex items-center px-4 md:px-6 text-[#111F35] font-semibold">
                     Request History
                 </div>
 
-                <div className="p-8">
+                <div className="p-4 md:p-8">
                     {/* Header */}
                     <div className="mb-6">
                         <h1 className="text-2xl font-bold text-[#111F35] mb-2">Your Request History</h1>
@@ -322,8 +322,8 @@ const FeedbackModal = ({ request, onClose }) => {
                         onClick={handleSubmit}
                         disabled={rating === 0}
                         className={`flex-1 py-2.5 rounded-lg transition font-medium ${rating === 0
-                                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                : "bg-[#F63049] text-white hover:bg-[#e12a40]"
+                            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                            : "bg-[#F63049] text-white hover:bg-[#e12a40]"
                             }`}
                     >
                         Submit Feedback

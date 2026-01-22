@@ -139,13 +139,13 @@ const Availability = () => {
         <div className="min-h-screen bg-[#F7F9FC] flex">
             <StudentSidebar />
 
-            <div className="flex-1 ml-64">
+            <div className="flex-1 md:ml-64">
                 {/* Top Bar */}
-                <div className="h-14 border-b bg-white flex items-center px-6 text-[#111F35] font-semibold">
+                <div className="h-14 border-b bg-white flex items-center px-4 md:px-6 text-[#111F35] font-semibold">
                     Available Volunteers
                 </div>
 
-                <div className="p-8">
+                <div className="p-4 md:p-8">
                     {/* Header */}
                     <div className="mb-6">
                         <h1 className="text-2xl font-bold text-[#111F35] mb-2">Browse Available Volunteers</h1>

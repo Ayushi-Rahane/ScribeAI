@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 
 const Navbar = () => {
     const [scrolled, setScrolled] = useState(false);
+    const [activeSection, setActiveSection] = useState('home');
     const location = useLocation();
 
     useEffect(() => {
@@ -17,6 +18,43 @@ const Navbar = () => {
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
+
+    // Intersection Observer to detect active section
+    useEffect(() => {
+        const sections = ['home', 'about', 'how-it-works', 'accessibility'];
+
+        const observerOptions = {
+            root: null,
+            rootMargin: '-20% 0px -70% 0px', // Trigger when section is in the middle of viewport
+            threshold: 0
+        };
+
+        const observerCallback = (entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    setActiveSection(entry.target.id);
+                }
+            });
+        };
+
+        const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+        sections.forEach((sectionId) => {
+            const element = document.getElementById(sectionId);
+            if (element) {
+                observer.observe(element);
+            }
+        });
+
+        return () => {
+            sections.forEach((sectionId) => {
+                const element = document.getElementById(sectionId);
+                if (element) {
+                    observer.unobserve(element);
+                }
+            });
+        };
+    }, [location.pathname]);
 
     const scrollToSection = (id) => {
         const element = document.getElementById(id);
@@ -76,10 +114,34 @@ const Navbar = () => {
 
                 {/* Nav Links */}
                 <div className="hidden md:flex items-center gap-8 text-gray-600 font-medium">
-                    <a href="#home" onClick={(e) => handleNavClick(e, 'home')} className="hover:text-[#F63049] transition">Home</a>
-                    <a href="#about" onClick={(e) => handleNavClick(e, 'about')} className="hover:text-[#F63049] transition">About</a>
-                    <a href="#how-it-works" onClick={(e) => handleNavClick(e, 'how-it-works')} className="hover:text-[#F63049] transition">How It Works</a>
-                    <a href="#accessibility" onClick={(e) => handleNavClick(e, 'accessibility')} className="hover:text-[#F63049] transition">Accessibility</a>
+                    <a
+                        href="#home"
+                        onClick={(e) => handleNavClick(e, 'home')}
+                        className={`transition ${activeSection === 'home' ? 'text-[#F63049] font-semibold' : 'hover:text-[#F63049]'}`}
+                    >
+                        Home
+                    </a>
+                    <a
+                        href="#about"
+                        onClick={(e) => handleNavClick(e, 'about')}
+                        className={`transition ${activeSection === 'about' ? 'text-[#F63049] font-semibold' : 'hover:text-[#F63049]'}`}
+                    >
+                        About
+                    </a>
+                    <a
+                        href="#how-it-works"
+                        onClick={(e) => handleNavClick(e, 'how-it-works')}
+                        className={`transition ${activeSection === 'how-it-works' ? 'text-[#F63049] font-semibold' : 'hover:text-[#F63049]'}`}
+                    >
+                        How It Works
+                    </a>
+                    <a
+                        href="#accessibility"
+                        onClick={(e) => handleNavClick(e, 'accessibility')}
+                        className={`transition ${activeSection === 'accessibility' ? 'text-[#F63049] font-semibold' : 'hover:text-[#F63049]'}`}
+                    >
+                        Accessibility
+                    </a>
                 </div>
 
                 {/* Right Actions */}

@@ -19,14 +19,14 @@ const Profile = () => {
         <div className="min-h-screen bg-[#F7F9FC] flex">
             <StudentSidebar />
 
-            <div className="flex-1 ml-64">
+            <div className="flex-1 md:ml-64">
 
                 {/* Top Bar */}
-                <div className="h-14 border-b bg-white flex items-center px-6 text-[#111F35] font-semibold">
+                <div className="h-14 border-b bg-white flex items-center px-4 md:px-6 text-[#111F35] font-semibold">
                     Profile
                 </div>
 
-                <div className="p-10 max-w-6xl mx-auto">
+                <div className="p-4 md:p-10 max-w-6xl mx-auto">
 
                     <h1 className="text-2xl font-bold text-[#111F35] mb-6">My Profile</h1>
 
