@@ -1,29 +1,21 @@
-import Navbar from './components/common/Navbar'
-import Hero from './components/common/Hero'
-import AboutSection from './components/common/AboutSection'
-import HowItWorksSection from './components/common/HowItWorksSection'
-import AccessibilitySection from './components/common/AccessibilitySection'
-import Footer from './components/common/footer'
-import './App.css'
+import { Routes, Route } from "react-router-dom";
+import HomePage from "./pages/public/HomePage";
+import LoginPage from "./components/common/LoginPage";
+import StudentDashboard from "./pages/student/StudentDashboard";
+import RequestScribe from "./pages/student/RequestScribe";
+import ActiveRequests from "./pages/student/ActiveRequests";
 
 function App() {
   return (
-    <>
-      <Navbar />
-      <main className="main-content">
-        <div id="home">
-          <Hero />
-        </div>
-        <div id="about">
-          <AboutSection />
-        </div>
-        <HowItWorksSection />
-        <AccessibilitySection />
-        <Footer />
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/student/dashboard" element={<StudentDashboard />} />
+      <Route path="/student/request" element={<RequestScribe />} />
+      <Route path="/student/active" element={<ActiveRequests />} />
 
-      </main>
-    </>
-  )
+    </Routes>
+  );
 }
 
-export default App
+export default App;
