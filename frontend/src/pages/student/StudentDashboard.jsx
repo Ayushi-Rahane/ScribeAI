@@ -29,7 +29,7 @@ const StudentDashboard = () => {
 
                 {/* Topbar */}
                 <header className="h-16 bg-white border-b flex items-center justify-between px-4 md:px-6">
-                    <h2 className="text-lg font-semibold">Dashboard</h2>
+                    <h2 className="text-lg font-semibold pl-12 md:pl-0">Dashboard</h2>
 
                     <div className="flex items-center gap-3 md:gap-4">
                         <button

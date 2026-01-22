@@ -30,7 +30,7 @@ const RequestScribe = () => {
 
                 {/* Top bar */}
                 <div className="h-14 border-b bg-white flex items-center px-4 md:px-6 text-[#111F35] font-semibold">
-                    Request Scribe
+                    <span className="pl-12 md:pl-0">Request Scribe</span>
                 </div>
 
                 <div className="p-10">

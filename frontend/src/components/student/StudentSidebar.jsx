@@ -57,9 +57,9 @@ const DashboardSidebar = () => {
             {/* Mobile Menu Button */}
             <button
                 onClick={toggleMobileMenu}
-                className="md:hidden fixed top-4 left-4 z-50 bg-[#0F1E33] text-white p-2 rounded-lg shadow-lg"
+                className="md:hidden fixed top-3.5 left-4 z-50 bg-[#0F1E33] text-white p-2.5 rounded-lg shadow-lg"
             >
-                {isMobileMenuOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
+                {isMobileMenuOpen ? <FaTimes size={18} /> : <FaBars size={18} />}
             </button>
 
             {/* Overlay for mobile */}
@@ -72,13 +72,13 @@ const DashboardSidebar = () => {
 
             {/* Sidebar */}
             <aside className={`
-                w-64 bg-gradient-to-b from-[#0F1E33] to-[#121C2D] text-gray-300 flex flex-col 
-                fixed left-0 top-0 h-screen overflow-y-auto z-40 transition-transform duration-300
+                w-64 bg-gradient-to-b from-[#0F1E33] to-[#121C2D] text-gray-300
+                fixed left-0 top-0 h-screen z-40 transition-transform duration-300 flex flex-col
                 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
             `}>
 
-                {/* Logo */}
-                <div className="flex items-center gap-3 px-6 py-6 text-white text-xl font-bold">
+                {/* Logo - Fixed at top */}
+                <div className="flex items-center gap-3 px-6 py-6 text-white text-xl font-bold flex-shrink-0">
                     <svg
                         className="w-8 h-8"
                         viewBox="0 0 96 96"
@@ -96,8 +96,8 @@ const DashboardSidebar = () => {
                     ScribeAI
                 </div>
 
-                {/* Menu */}
-                <div className="px-4">
+                {/* Menu - Scrollable section */}
+                <div className="flex-1 overflow-y-auto px-4 py-4">
                     <p className="text-xs uppercase text-gray-500 mb-3 tracking-wider">Menu</p>
 
                     <div className="space-y-1">
@@ -112,8 +112,8 @@ const DashboardSidebar = () => {
                     </div>
                 </div>
 
-                {/* User Card */}
-                <div className="mt-auto border-t border-white/10 p-4">
+                {/* User Card - Fixed at bottom */}
+                <div className="border-t border-white/10 p-4 flex-shrink-0">
 
                     <div className="flex items-center gap-3 mb-3">
                         <div className="bg-[#F63049] w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold">

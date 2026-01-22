@@ -23,7 +23,7 @@ const Profile = () => {
 
                 {/* Top Bar */}
                 <div className="h-14 border-b bg-white flex items-center px-4 md:px-6 text-[#111F35] font-semibold">
-                    Profile
+                    <span className="pl-12 md:pl-0">Profile</span>
                 </div>
 
                 <div className="p-4 md:p-10 max-w-6xl mx-auto">

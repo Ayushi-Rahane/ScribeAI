@@ -54,7 +54,7 @@ const ActiveRequests = () => {
             <div className="flex-1 md:ml-64">
                 {/* Top bar */}
                 <div className="h-14 border-b bg-white flex items-center px-4 md:px-6 text-[#111F35] font-semibold">
-                    Active Requests
+                    <span className="pl-12 md:pl-0">Active Requests</span>
                 </div>
 
                 <div className="p-4 md:p-6">
