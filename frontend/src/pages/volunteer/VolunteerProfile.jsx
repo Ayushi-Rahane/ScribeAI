@@ -206,7 +206,7 @@ const VolunteerProfile = () => {
                                         <InputField
                                             label="Email Address"
                                             type="email"
-                                            value={localStorage.getItem('userEmail') || ''}
+                                            value={JSON.parse(localStorage.getItem('user') || '{}').email || ''}
                                             disabled={true}
                                         />
                                         <InputField

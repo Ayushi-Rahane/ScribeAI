@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaUser, FaMapMarkerAlt, FaBook, FaClock, FaArrowRight, FaArrowLeft } from "react-icons/fa";
+import authService from "../../services/authService";
 
 const VolunteerSignup = () => {
     const navigate = useNavigate();
     const [step, setStep] = useState(1);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
     const [formData, setFormData] = useState({
         // Personal Information
@@ -92,12 +95,42 @@ const VolunteerSignup = () => {
         });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // TODO: Add API call to register volunteer
-        console.log("Volunteer Registration Data:", formData);
-        // Navigate to volunteer dashboard after successful registration
-        navigate("/volunteer/dashboard");
+
+        // Validation
+        if (formData.password !== formData.confirmPassword) {
+            setError("Passwords do not match");
+            return;
+        }
+
+        if (formData.subjects.length === 0) {
+            setError("Please select at least one subject");
+            return;
+        }
+
+        if (formData.languages.length === 0) {
+            setError("Please select at least one language");
+            return;
+        }
+
+        try {
+            setLoading(true);
+            setError(null);
+
+            // Prepare registration data (exclude confirmPassword)
+            const { confirmPassword, ...registrationData } = formData;
+
+            // Call registration API
+            await authService.registerVolunteer(registrationData);
+
+            // Navigate to volunteer dashboard after successful registration
+            navigate("/volunteer/dashboard");
+        } catch (err) {
+            console.error("Registration error:", err);
+            setError(err.message || "Registration failed. Please try again.");
+            setLoading(false);
+        }
     };
 
     const nextStep = () => {
@@ -157,6 +190,14 @@ const VolunteerSignup = () => {
                 {/* Form Card */}
                 <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8">
                     <form onSubmit={handleSubmit}>
+                        {/* Error Message */}
+                        {error && (
+                            <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                                <p className="font-medium">Registration Error</p>
+                                <p className="text-sm">{error}</p>
+                            </div>
+                        )}
+
                         {/* Step 1: Personal & Account Information */}
                         {step === 1 && (
                             <div className="space-y-6">
@@ -398,8 +439,8 @@ const VolunteerSignup = () => {
                                 onClick={prevStep}
                                 disabled={step === 1}
                                 className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium transition ${step === 1
-                                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                                     }`}
                             >
                                 <FaArrowLeft /> Previous
@@ -416,9 +457,10 @@ const VolunteerSignup = () => {
                             ) : (
                                 <button
                                     type="submit"
-                                    className="bg-[#F63049] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-[#e12a40] transition"
+                                    disabled={loading}
+                                    className="bg-[#F63049] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-[#e12a40] transition disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    Complete Registration
+                                    {loading ? "Registering..." : "Complete Registration"}
                                 </button>
                             )}
                         </div>
