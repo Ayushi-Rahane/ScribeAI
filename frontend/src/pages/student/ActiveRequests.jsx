@@ -1,50 +1,77 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaTrash, FaClock, FaCalendarAlt, FaBook } from "react-icons/fa";
 import StudentSidebar from "../../components/student/StudentSidebar";
-
-const initialRequests = [
-    {
-        id: 1,
-        subject: "Advanced Calculus II",
-        type: "Final Exam",
-        date: "Oct 24, 2024",
-        time: "10:00 AM",
-        duration: "3 Hours",
-        status: "Matching in Progress",
-        matchProbability: 80,
-        notifiedVolunteers: 5,
-    },
-    {
-        id: 2,
-        subject: "Physics 101",
-        type: "Midterm",
-        date: "Oct 28, 2024",
-        time: "2:00 PM",
-        duration: "2 Hours",
-        status: "Pending",
-        matchProbability: 60,
-        notifiedVolunteers: 3,
-    },
-    {
-        id: 3,
-        subject: "Chemistry Lab",
-        type: "Quiz",
-        date: "Nov 02, 2024",
-        time: "11:30 AM",
-        duration: "1 Hour",
-        status: "Matched",
-        volunteer: "Sarah Johnson",
-        matchProbability: 100,
-    },
-];
+import requestService from "../../services/requestService";
 
 const ActiveRequests = () => {
-    const [requests, setRequests] = useState(initialRequests);
+    const [requests, setRequests] = useState([]);
     const [deleteConfirm, setDeleteConfirm] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    const handleDelete = (id) => {
-        setRequests(requests.filter(req => req.id !== id));
-        setDeleteConfirm(null);
+    // Fetch requests on component mount
+    useEffect(() => {
+        fetchRequests();
+    }, []);
+
+    const fetchRequests = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const data = await requestService.getRequests();
+
+            // Filter out completed and cancelled requests
+            const activeRequests = data.filter(
+                req => req.status !== 'completed' && req.status !== 'cancelled'
+            );
+
+            // Map backend data to component format
+            const mappedRequests = activeRequests.map(req => ({
+                id: req._id,
+                subject: req.subject,
+                type: req.examType,
+                date: new Date(req.examDate).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                }),
+                time: req.examTime,
+                duration: req.duration,
+                requirements: req.requirements,
+                status: mapStatus(req.status),
+                volunteer: req.volunteerId?.fullName || null,
+                matchProbability: req.status === 'pending' ? 60 : req.status === 'accepted' ? 100 : 80,
+                notifiedVolunteers: req.status === 'pending' ? 3 : 5
+            }));
+
+            setRequests(mappedRequests);
+            setLoading(false);
+        } catch (err) {
+            console.error("Error fetching requests:", err);
+            setError(err.message || "Failed to load requests");
+            setLoading(false);
+        }
+    };
+
+    // Map backend status to display status
+    const mapStatus = (backendStatus) => {
+        const statusMap = {
+            'pending': 'Matching in Progress',
+            'accepted': 'Matched',
+            'in-progress': 'Matched'
+        };
+        return statusMap[backendStatus] || 'Pending';
+    };
+
+    const handleDelete = async (id) => {
+        try {
+            await requestService.cancelRequest(id);
+            setRequests(requests.filter(req => req.id !== id));
+            setDeleteConfirm(null);
+        } catch (err) {
+            console.error("Error deleting request:", err);
+            alert("Failed to cancel request: " + err.message);
+        }
     };
 
     return (
@@ -66,44 +93,72 @@ const ActiveRequests = () => {
                         </p>
                     </div>
 
-                    {/* Stats */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        <StatCard title="Total Active" value={requests.length} color="blue" />
-                        <StatCard
-                            title="Matching"
-                            value={requests.filter(r => r.status === "Matching in Progress").length}
-                            color="orange"
-                        />
-                        <StatCard
-                            title="Matched"
-                            value={requests.filter(r => r.status === "Matched").length}
-                            color="green"
-                        />
-                    </div>
+                    {/* Error Message */}
+                    {error && (
+                        <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl">
+                            <p className="font-medium">Error loading requests</p>
+                            <p className="text-sm">{error}</p>
+                            <button
+                                onClick={fetchRequests}
+                                className="mt-2 text-sm underline hover:no-underline"
+                            >
+                                Try again
+                            </button>
+                        </div>
+                    )}
 
-                    {/* Requests List */}
-                    <div className="space-y-4">
-                        {requests.length === 0 ? (
-                            <div className="bg-white rounded-2xl p-12 text-center border border-gray-200">
-                                <div className="text-gray-400 mb-4">
-                                    <FaBook className="text-5xl mx-auto" />
-                                </div>
-                                <h3 className="text-lg font-semibold text-gray-600 mb-2">No Active Requests</h3>
-                                <p className="text-gray-500">You don't have any active scribe requests at the moment.</p>
+                    {/* Loading State */}
+                    {loading ? (
+                        <div className="bg-white rounded-2xl p-12 text-center border border-gray-200">
+                            <div className="flex items-center justify-center gap-2 text-[#F63049]">
+                                <div className="w-3 h-3 bg-[#F63049] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                                <div className="w-3 h-3 bg-[#F63049] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                                <div className="w-3 h-3 bg-[#F63049] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
                             </div>
-                        ) : (
-                            requests.map((request) => (
-                                <RequestCard
-                                    key={request.id}
-                                    request={request}
-                                    onDelete={() => setDeleteConfirm(request.id)}
-                                    deleteConfirm={deleteConfirm === request.id}
-                                    onConfirmDelete={() => handleDelete(request.id)}
-                                    onCancelDelete={() => setDeleteConfirm(null)}
+                            <p className="text-gray-500 mt-4">Loading your requests...</p>
+                        </div>
+                    ) : (
+                        <>
+                            {/* Stats */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                <StatCard title="Total Active" value={requests.length} color="blue" />
+                                <StatCard
+                                    title="Matching"
+                                    value={requests.filter(r => r.status === "Matching in Progress").length}
+                                    color="orange"
                                 />
-                            ))
-                        )}
-                    </div>
+                                <StatCard
+                                    title="Matched"
+                                    value={requests.filter(r => r.status === "Matched").length}
+                                    color="green"
+                                />
+                            </div>
+
+                            {/* Requests List */}
+                            <div className="space-y-4">
+                                {requests.length === 0 ? (
+                                    <div className="bg-white rounded-2xl p-12 text-center border border-gray-200">
+                                        <div className="text-gray-400 mb-4">
+                                            <FaBook className="text-5xl mx-auto" />
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-gray-600 mb-2">No Active Requests</h3>
+                                        <p className="text-gray-500">You don't have any active scribe requests at the moment.</p>
+                                    </div>
+                                ) : (
+                                    requests.map((request) => (
+                                        <RequestCard
+                                            key={request.id}
+                                            request={request}
+                                            onDelete={() => setDeleteConfirm(request.id)}
+                                            deleteConfirm={deleteConfirm === request.id}
+                                            onConfirmDelete={() => handleDelete(request.id)}
+                                            onCancelDelete={() => setDeleteConfirm(null)}
+                                        />
+                                    ))
+                                )}
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
         </div>

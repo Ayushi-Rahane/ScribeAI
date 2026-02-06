@@ -1,29 +1,62 @@
-
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { useState } from "react";
 import InputField from "../InputField";
 import SelectField from "../SelectField";
 
-const durations = ["1 Hour", "2 Hours", "3 Hours", "4 Hours"];
-const ExamDetails = ({ setStep }) => {
-    const [selectedDuration, setSelectedDuration] = useState(null);
+const durations = ["1 hour", "2 hours", "3 hours", "4 hours"];
+
+const ExamDetails = ({ setStep, formData, updateFormData }) => {
+    const [selectedDuration, setSelectedDuration] = useState(formData.duration || null);
+
+    const handleNext = () => {
+        // Validate before moving to next step
+        if (!formData.subject || !formData.examType || !formData.examDate || !formData.examTime || !selectedDuration) {
+            alert("Please fill in all fields before continuing");
+            return;
+        }
+        setStep(2);
+    };
+
     return (
         <div className="max-w-4xl mx-auto mt-10 bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-
             <div className="border-t-4 border-[#F63049] p-8">
-
                 <h3 className="font-semibold text-[#111F35] mb-6">Exam Details</h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Subject */}
+                    <div>
+                        <label className="block text-sm text-gray-600 mb-1">Subject / Course Name</label>
+                        <input
+                            placeholder="e.g. Advanced Calculus II"
+                            value={formData.subject}
+                            onChange={(e) => updateFormData('subject', e.target.value)}
+                            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#F63049]"
+                        />
+                    </div>
 
-                    <InputField label="Subject / Course Name" placeholder="e.g. Advanced Calculus II" />
-                    <SelectField label="Exam Type" />
+                    {/* Exam Type */}
+                    <div>
+                        <label className="block text-sm text-gray-600 mb-1">Exam Type</label>
+                        <select
+                            value={formData.examType}
+                            onChange={(e) => updateFormData('examType', e.target.value)}
+                            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#F63049]"
+                        >
+                            <option value="">Select type</option>
+                            <option value="Midterm">Midterm</option>
+                            <option value="Final">Final</option>
+                            <option value="Quiz">Quiz</option>
+                            <option value="Assignment">Assignment</option>
+                        </select>
+                    </div>
 
                     {/* Date */}
                     <div>
                         <label className="block text-sm text-gray-600 mb-1">Date</label>
                         <input
                             type="date"
+                            value={formData.examDate}
+                            onChange={(e) => updateFormData('examDate', e.target.value)}
                             className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#F63049]"
                         />
                     </div>
@@ -33,10 +66,11 @@ const ExamDetails = ({ setStep }) => {
                         <label className="block text-sm text-gray-600 mb-1">Time</label>
                         <input
                             type="time"
+                            value={formData.examTime}
+                            onChange={(e) => updateFormData('examTime', e.target.value)}
                             className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#F63049]"
                         />
                     </div>
-
                 </div>
 
                 {/* Duration */}
@@ -47,7 +81,11 @@ const ExamDetails = ({ setStep }) => {
                         {durations.map((d) => (
                             <button
                                 key={d}
-                                onClick={() => setSelectedDuration(d)}
+                                onClick={() => {
+                                    setSelectedDuration(d);
+                                    updateFormData('duration', d);
+                                }}
+                                type="button"
                                 className={`border rounded-xl py-3 text-sm font-medium transition
                                 ${selectedDuration === d
                                         ? "border-[#F63049] bg-red-50 text-[#F63049]"
@@ -59,27 +97,28 @@ const ExamDetails = ({ setStep }) => {
                         ))}
                     </div>
                 </div>
-
             </div>
 
             {/* Footer buttons */}
             <div className="flex justify-between items-center px-8 py-5 border-t bg-[#FAFBFD]">
-
-                <button className="flex items-center gap-2 border border-gray-300 text-gray-600 px-5 py-2 rounded-lg hover:bg-gray-100 transition">
+                <button
+                    type="button"
+                    className="flex items-center gap-2 border border-gray-300 text-gray-600 px-5 py-2 rounded-lg hover:bg-gray-100 transition opacity-50 cursor-not-allowed"
+                    disabled
+                >
                     <FaArrowLeft />
                     Back
                 </button>
 
                 <button
-                    onClick={() => setStep(2)}
+                    type="button"
+                    onClick={handleNext}
                     className="flex items-center gap-2 bg-[#F63049] text-white px-6 py-2 rounded-lg hover:bg-[#e12a40] transition"
                 >
                     Next
                     <FaArrowRight />
                 </button>
-
             </div>
-
         </div>
     );
 };

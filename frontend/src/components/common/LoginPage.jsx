@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaGraduationCap, FaUserFriends, FaShieldAlt } from "react-icons/fa";
+import authService from "../../services/authService";
 
 const roles = [
     { id: "student", label: "Student", icon: <FaGraduationCap /> },
@@ -10,19 +11,33 @@ const roles = [
 
 const LoginPage = () => {
     const [role, setRole] = useState("student");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
+        setError("");
 
-        // TODO: Add real authentication here
+        try {
+            // Call backend login API
+            const data = await authService.login(email, password);
 
-        if (role === "student") {
-            navigate("/student/dashboard");
-        } else if (role === "volunteer") {
-            navigate("/volunteer/dashboard");
-        } else if (role === "admin") {
-            navigate("/admin/dashboard");
+            // Navigate based on user role
+            if (data.role === "student") {
+                navigate("/student/dashboard");
+            } else if (data.role === "volunteer") {
+                navigate("/volunteer/dashboard");
+            } else if (data.role === "admin") {
+                navigate("/admin/dashboard");
+            }
+        } catch (err) {
+            console.error("Login error:", err);
+            setError(err.message || "Login failed. Please check your credentials.");
+            setLoading(false);
         }
     };
 
@@ -81,6 +96,13 @@ const LoginPage = () => {
                     Enter your credentials to access your {role} account.
                 </p>
 
+                {/* Error Message */}
+                {error && (
+                    <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                        {error}
+                    </div>
+                )}
+
                 <form className="space-y-4" onSubmit={handleSubmit}>
 
                     {/* Email */}
@@ -89,8 +111,11 @@ const LoginPage = () => {
                         <input
                             type="email"
                             placeholder="m@example.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             required
-                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F63049]"
+                            disabled={loading}
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F63049] disabled:bg-gray-100"
                         />
                     </div>
 
@@ -104,8 +129,11 @@ const LoginPage = () => {
                         </div>
                         <input
                             type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
                             required
-                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F63049]"
+                            disabled={loading}
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#F63049] disabled:bg-gray-100"
                         />
                     </div>
 
@@ -118,9 +146,10 @@ const LoginPage = () => {
                     {/* Submit */}
                     <button
                         type="submit"
-                        className="w-full bg-[#F63049] hover:bg-[#e02b42] text-white py-2.5 rounded-lg font-medium transition"
+                        disabled={loading}
+                        className="w-full bg-[#F63049] hover:bg-[#e02b42] text-white py-2.5 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        Sign In
+                        {loading ? "Signing in..." : "Sign In"}
                     </button>
                 </form>
 
@@ -144,9 +173,12 @@ const LoginPage = () => {
                 {/* Signup */}
                 <p className="text-sm text-center text-gray-500 mt-4">
                     Don't have an account?{" "}
-                    <a href="#" className="text-[#F63049] font-medium hover:underline">
+                    <button
+                        onClick={() => navigate(role === "volunteer" ? "/signup/volunteer" : "/signup/student")}
+                        className="text-[#F63049] font-medium hover:underline"
+                    >
                         Sign up
-                    </a>
+                    </button>
                 </p>
 
             </div>

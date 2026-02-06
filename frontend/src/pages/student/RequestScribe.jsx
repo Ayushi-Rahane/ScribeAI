@@ -5,36 +5,75 @@ import StudentSidebar from "../../components/student/StudentSidebar";
 import ExamDetails from "../../components/student/requestScribe/ExamDetails";
 import ScribeRequirements from "../../components/student/requestScribe/ScribeRequirements";
 import ReviewStep from "../../components/student/requestScribe/ReviewStep";
-
-
+import requestService from "../../services/requestService";
 
 const RequestScribe = () => {
     const [step, setStep] = useState(1);
     const [showSuccess, setShowSuccess] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
     const navigate = useNavigate();
 
-    const handleSubmit = () => {
-        setShowSuccess(true);
-        // Redirect to active requests after 2 seconds
-        setTimeout(() => {
-            navigate("/student/active");
-        }, 2000);
+    // Form data state
+    const [formData, setFormData] = useState({
+        subject: "",
+        examType: "",
+        examDate: "",
+        examTime: "",
+        duration: "",
+        requirements: ""
+    });
+
+    // Update form data
+    const updateFormData = (field, value) => {
+        setFormData(prev => ({
+            ...prev,
+            [field]: value
+        }));
     };
 
+    const handleSubmit = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            // Validate required fields
+            if (!formData.subject || !formData.examType || !formData.examDate ||
+                !formData.examTime || !formData.duration || !formData.requirements) {
+                setError("Please fill in all required fields");
+                setLoading(false);
+                return;
+            }
+
+            // Submit to backend
+            await requestService.createRequest(formData);
+
+            // Show success modal
+            setShowSuccess(true);
+
+            // Redirect to dashboard after 2 seconds
+            setTimeout(() => {
+                navigate("/student/dashboard");
+            }, 2000);
+
+        } catch (err) {
+            console.error("Error submitting request:", err);
+            setError(err.message || "Failed to submit request. Please try again.");
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-[#F7F9FC] flex">
             <StudentSidebar />
 
             <div className="flex-1 md:ml-64">
-
                 {/* Top bar */}
                 <div className="h-14 border-b bg-white flex items-center px-4 md:px-6 text-[#111F35] font-semibold">
                     <span className="pl-12 md:pl-0">Request Scribe</span>
                 </div>
 
                 <div className="p-4 md:p-10">
-
                     {/* Center header */}
                     <div className="text-center mb-6 md:mb-10">
                         <h1 className="text-2xl md:text-3xl font-bold text-[#111F35] mb-2">Request a Scribe</h1>
@@ -43,13 +82,39 @@ const RequestScribe = () => {
                         </p>
                     </div>
 
+                    {/* Error Message */}
+                    {error && (
+                        <div className="max-w-4xl mx-auto mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl">
+                            {error}
+                        </div>
+                    )}
+
                     {/* Stepper */}
                     <Stepper currentStep={step} />
 
                     {/* Conditional Step Rendering */}
-                    {step === 1 && <ExamDetails setStep={setStep} />}
-                    {step === 2 && <ScribeRequirements setStep={setStep} />}
-                    {step === 3 && <ReviewStep setStep={setStep} onSubmit={handleSubmit} />}
+                    {step === 1 && (
+                        <ExamDetails
+                            setStep={setStep}
+                            formData={formData}
+                            updateFormData={updateFormData}
+                        />
+                    )}
+                    {step === 2 && (
+                        <ScribeRequirements
+                            setStep={setStep}
+                            formData={formData}
+                            updateFormData={updateFormData}
+                        />
+                    )}
+                    {step === 3 && (
+                        <ReviewStep
+                            setStep={setStep}
+                            onSubmit={handleSubmit}
+                            formData={formData}
+                            loading={loading}
+                        />
+                    )}
                 </div>
             </div>
 
@@ -66,7 +131,6 @@ const Stepper = ({ currentStep }) => {
 
     return (
         <div className="flex items-center justify-center max-w-3xl mx-auto mb-6 md:mb-8 overflow-x-auto pb-2">
-
             {steps.map((label, index) => {
                 const stepNum = index + 1;
                 const isActive = currentStep === stepNum;
@@ -75,7 +139,6 @@ const Stepper = ({ currentStep }) => {
                 return (
                     <React.Fragment key={label}>
                         <div className="flex flex-col items-center flex-shrink-0">
-
                             <div
                                 className={`w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-full text-xs md:text-sm font-semibold
                   ${isCompleted
@@ -112,39 +175,6 @@ const Stepper = ({ currentStep }) => {
         </div>
     );
 };
-
-const InputField = ({ label, placeholder, icon }) => (
-    <div>
-        <label className="block text-sm text-gray-600 mb-1">{label}</label>
-        <div className="relative">
-            <input
-                placeholder={placeholder}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#F63049]"
-            />
-            {icon && (
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                    {icon}
-                </span>
-            )}
-        </div>
-    </div>
-);
-
-const SelectField = ({ label }) => (
-    <div>
-        <label className="block text-sm text-gray-600 mb-1">{label}</label>
-        <div className="relative">
-            <select className="w-full appearance-none border border-gray-200 rounded-xl px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#F63049]">
-                <option>Select type</option>
-                <option>Midterm</option>
-                <option>Final</option>
-                <option>Quiz</option>
-                <option>Assignment</option>
-            </select>
-            <FaChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs" />
-        </div>
-    </div>
-);
 
 const SuccessModal = () => (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fadeIn">

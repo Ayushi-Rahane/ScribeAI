@@ -1,51 +1,173 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import StudentSidebar from "../../components/student/StudentSidebar";
+import studentService from "../../services/studentService";
+import authService from "../../services/authService";
 
 const Profile = () => {
     const [showToast, setShowToast] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [profile, setProfile] = useState(null);
+    const [user, setUser] = useState(null);
+    const [formData, setFormData] = useState({});
+    const navigate = useNavigate();
 
-    const handleSave = () => {
-        // Here you would typically make an API call to save the data
-        // For now, we'll just show the success message
-        setShowToast(true);
+    // Fetch profile data on component mount
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                setLoading(true);
+                const currentUser = authService.getUser();
+                const profileData = await studentService.getProfile();
 
-        // Hide the toast after 3 seconds
-        setTimeout(() => {
-            setShowToast(false);
-        }, 3000);
+                setUser(currentUser);
+                setProfile(profileData);
+                // Initialize form data with profile data, ensuring all fields have values
+                setFormData({
+                    fullName: profileData?.fullName || '',
+                    phone: profileData?.phone || '',
+                    dateOfBirth: profileData?.dateOfBirth || '',
+                    university: profileData?.university || '',
+                    course: profileData?.course || '',
+                    disabilityType: profileData?.disabilityType || '',
+                    certificateNumber: profileData?.certificateNumber || '',
+                    specificNeeds: profileData?.specificNeeds || '',
+                    currentYear: profileData?.currentYear || '',
+                    examFrequency: profileData?.examFrequency || '',
+                    preferredSubjects: profileData?.preferredSubjects || [],
+                    academicNotes: profileData?.academicNotes || '',
+                    preferredLanguage: profileData?.preferredLanguage || '',
+                    notificationMethod: profileData?.notificationMethod || '',
+                    preferredTime: profileData?.preferredTime || ''
+                });
+                setLoading(false);
+            } catch (err) {
+                console.error("Error fetching profile:", err);
+                setError(err.message);
+                setLoading(false);
+
+                // If unauthorized, redirect to login
+                if (err.message.includes("token") || err.message.includes("authorized")) {
+                    navigate("/login");
+                }
+            }
+        };
+
+        fetchProfile();
+    }, [navigate]);
+
+    const handleInputChange = (field, value) => {
+        setFormData(prev => ({
+            ...prev,
+            [field]: value
+        }));
     };
+
+    const handleSave = async () => {
+        try {
+            console.log('Saving profile with data:', formData);
+            await studentService.updateProfile(formData);
+
+            setShowToast(true);
+            setTimeout(() => {
+                setShowToast(false);
+            }, 3000);
+
+            // Refresh profile data after successful update
+            const updatedProfile = await studentService.getProfile();
+            setProfile(updatedProfile);
+            // Reinitialize formData with all fields
+            setFormData({
+                fullName: updatedProfile?.fullName || '',
+                phone: updatedProfile?.phone || '',
+                dateOfBirth: updatedProfile?.dateOfBirth || '',
+                university: updatedProfile?.university || '',
+                course: updatedProfile?.course || '',
+                disabilityType: updatedProfile?.disabilityType || '',
+                certificateNumber: updatedProfile?.certificateNumber || '',
+                specificNeeds: updatedProfile?.specificNeeds || '',
+                currentYear: updatedProfile?.currentYear || '',
+                examFrequency: updatedProfile?.examFrequency || '',
+                preferredSubjects: updatedProfile?.preferredSubjects || [],
+                academicNotes: updatedProfile?.academicNotes || '',
+                preferredLanguage: updatedProfile?.preferredLanguage || '',
+                notificationMethod: updatedProfile?.notificationMethod || '',
+                preferredTime: updatedProfile?.preferredTime || ''
+            });
+        } catch (err) {
+            console.error("Error updating profile:", err);
+            alert("Failed to update profile: " + err.message);
+        }
+    };
+
+    // Get initials for avatar
+    const getInitials = (name) => {
+        if (!name) return "??";
+        const parts = name.split(" ");
+        return parts.length >= 2
+            ? `${parts[0][0]}${parts[1][0]}`.toUpperCase()
+            : name.substring(0, 2).toUpperCase();
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-[#F7F9FC] flex">
+                <StudentSidebar />
+                <div className="flex-1 md:ml-64 flex items-center justify-center">
+                    <div className="text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#F63049] mx-auto mb-4"></div>
+                        <p className="text-gray-600">Loading profile...</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen bg-[#F7F9FC] flex">
+                <StudentSidebar />
+                <div className="flex-1 md:ml-64 flex items-center justify-center">
+                    <div className="text-center">
+                        <p className="text-red-600 mb-4">Error loading profile: {error}</p>
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="bg-[#F63049] text-white px-6 py-2 rounded-lg"
+                        >
+                            Retry
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-[#F7F9FC] flex">
             <StudentSidebar />
 
             <div className="flex-1 md:ml-64">
-
                 {/* Top Bar */}
                 <div className="h-14 border-b bg-white flex items-center px-4 md:px-6 text-[#111F35] font-semibold">
                     <span className="pl-12 md:pl-0">Profile</span>
                 </div>
 
                 <div className="p-4 md:p-10 max-w-6xl mx-auto">
-
                     <h1 className="text-2xl font-bold text-[#111F35] mb-6">My Profile</h1>
 
                     {/* Profile Card */}
                     <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-8">
-
                         {/* Avatar Section */}
                         <div className="flex items-center gap-6 mb-8">
                             <div className="w-20 h-20 rounded-full bg-[#F63049] text-white flex items-center justify-center text-2xl font-semibold">
-                                JD
+                                {getInitials(profile?.fullName)}
                             </div>
 
                             <div>
-                                <h2 className="text-lg font-semibold text-[#111F35]">John Doe</h2>
+                                <h2 className="text-lg font-semibold text-[#111F35]">{profile?.fullName || "N/A"}</h2>
                                 <p className="text-gray-500 text-sm">Student Account</p>
-
-                                <button className="mt-2 text-sm text-[#F63049] font-medium hover:underline">
-                                    Change Photo
-                                </button>
+                                <p className="text-gray-500 text-xs mt-1">{user?.email || "N/A"}</p>
                             </div>
                         </div>
 
@@ -53,12 +175,17 @@ const Profile = () => {
                         <div className="mb-8">
                             <h3 className="font-semibold text-[#111F35] mb-4 pb-2 border-b">Personal Information</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <Input label="Full Name" value="John Doe" />
-                                <Input label="Email Address" value="john@example.com" />
-                                <Input label="Phone Number" value="+91 9876543210" />
-                                <Input label="Date of Birth" type="date" value="2000-05-15" />
-                                <Input label="University / College" value="ABC University" />
-                                <Input label="Course / Program" value="B.Tech Computer Engineering" />
+                                <Input label="Full Name" value={formData?.fullName || ""} onChange={(v) => handleInputChange('fullName', v)} />
+                                <Input label="Email Address" value={user?.email || ""} disabled />
+                                <Input label="Phone Number" value={formData?.phone || ""} onChange={(v) => handleInputChange('phone', v)} />
+                                <Input
+                                    label="Date of Birth"
+                                    type="date"
+                                    value={formData?.dateOfBirth ? new Date(formData.dateOfBirth).toISOString().split('T')[0] : ""}
+                                    onChange={(v) => handleInputChange('dateOfBirth', v)}
+                                />
+                                <Input label="University / College" value={formData?.university || ""} onChange={(v) => handleInputChange('university', v)} />
+                                <Input label="Course / Program" value={formData?.course || ""} onChange={(v) => handleInputChange('course', v)} />
                             </div>
                         </div>
 
@@ -68,6 +195,7 @@ const Profile = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <Select
                                     label="Type of Disability"
+                                    value={formData?.disabilityType || ""}
                                     options={[
                                         "Visual Impairment",
                                         "Hearing Impairment",
@@ -76,13 +204,15 @@ const Profile = () => {
                                         "Multiple Disabilities",
                                         "Other"
                                     ]}
+                                    onChange={(v) => handleInputChange('disabilityType', v)}
                                 />
-                                <Input label="Disability Certificate Number" value="DIS/2024/12345" />
+                                <Input label="Disability Certificate Number" value={formData?.certificateNumber || ""} onChange={(v) => handleInputChange('certificateNumber', v)} />
 
                                 <div className="md:col-span-2">
                                     <label className="block text-sm text-gray-600 mb-1">Specific Needs / Accommodations Required</label>
                                     <textarea
-                                        defaultValue="Need someone to read questions aloud and write answers as dictated. Prefer slow and clear dictation."
+                                        value={formData?.specificNeeds || ""}
+                                        onChange={(e) => handleInputChange('specificNeeds', e.target.value)}
                                         rows={3}
                                         className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#F63049] resize-none"
                                     />
@@ -94,35 +224,33 @@ const Profile = () => {
                         <div className="mb-8">
                             <h3 className="font-semibold text-[#111F35] mb-4 pb-2 border-b">Academic Requirements</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <Input label="Current Year / Semester" value="3rd Year, 5th Semester" />
+                                <Input label="Current Year / Semester" value={formData?.currentYear || ""} onChange={(v) => handleInputChange('currentYear', v)} />
                                 <Select
                                     label="Exam Type Frequency"
+                                    value={formData?.examFrequency || ""}
                                     options={["Weekly", "Monthly", "Quarterly", "Semester-wise"]}
+                                    onChange={(v) => handleInputChange('examFrequency', v)}
                                 />
 
                                 <div className="md:col-span-2">
                                     <label className="block text-sm text-gray-600 mb-1">Preferred Subjects</label>
                                     <div className="flex flex-wrap gap-2 mb-2">
-                                        {["Mathematics", "Physics", "Computer Science", "Chemistry"].map((subject) => (
+                                        {(profile?.preferredSubjects || []).map((subject, index) => (
                                             <span
-                                                key={subject}
+                                                key={index}
                                                 className="px-3 py-1.5 bg-red-50 text-[#F63049] rounded-lg text-sm border border-red-200"
                                             >
                                                 {subject}
-                                                <button className="ml-2 text-red-400 hover:text-red-600">×</button>
                                             </span>
                                         ))}
                                     </div>
-                                    <input
-                                        placeholder="Type a subject and press Enter to add"
-                                        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#F63049]"
-                                    />
                                 </div>
 
                                 <div className="md:col-span-2">
                                     <label className="block text-sm text-gray-600 mb-1">Additional Academic Notes</label>
                                     <textarea
-                                        defaultValue="Prefer scribes with background in STEM subjects. Need extra time for mathematical calculations."
+                                        value={formData?.academicNotes || ""}
+                                        onChange={(e) => handleInputChange('academicNotes', e.target.value)}
                                         rows={3}
                                         className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#F63049] resize-none"
                                     />
@@ -136,15 +264,21 @@ const Profile = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <Select
                                     label="Preferred Language"
+                                    value={formData?.preferredLanguage || ""}
                                     options={["English", "Hindi", "Marathi", "Tamil", "Telugu"]}
+                                    onChange={(v) => handleInputChange('preferredLanguage', v)}
                                 />
                                 <Select
                                     label="Notification Method"
+                                    value={formData?.notificationMethod || ""}
                                     options={["Email", "SMS", "WhatsApp", "All"]}
+                                    onChange={(v) => handleInputChange('notificationMethod', v)}
                                 />
                                 <Select
                                     label="Preferred Time for Sessions"
-                                    options={["Morning (6AM-12PM)", "Afternoon (12PM-6PM)", "Evening (6PM-10PM)", "Flexible"]}
+                                    value={formData?.preferredTime || ""}
+                                    options={["Morning", "Afternoon", "Evening", "Flexible"]}
+                                    onChange={(v) => handleInputChange('preferredTime', v)}
                                 />
                             </div>
                         </div>
@@ -161,9 +295,7 @@ const Profile = () => {
                                 Save Changes
                             </button>
                         </div>
-
                     </div>
-
                 </div>
             </div>
 
@@ -182,23 +314,30 @@ const Profile = () => {
 
 /* ---------------- Reusable Components ---------------- */
 
-const Input = ({ label, value, type = "text" }) => (
+const Input = ({ label, value, type = "text", disabled = false, onChange }) => (
     <div>
         <label className="block text-sm text-gray-600 mb-1">{label}</label>
         <input
             type={type}
-            defaultValue={value}
-            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#F63049]"
+            value={value}
+            onChange={(e) => onChange && onChange(e.target.value)}
+            disabled={disabled}
+            className={`w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#F63049] ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''
+                }`}
         />
     </div>
 );
 
-const Select = ({ label, options }) => (
+const Select = ({ label, options, value, onChange }) => (
     <div>
         <label className="block text-sm text-gray-600 mb-1">{label}</label>
-        <select className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#F63049]">
+        <select
+            value={value}
+            onChange={(e) => onChange && onChange(e.target.value)}
+            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#F63049]"
+        >
             {options.map((o) => (
-                <option key={o}>{o}</option>
+                <option key={o} value={o}>{o}</option>
             ))}
         </select>
     </div>
