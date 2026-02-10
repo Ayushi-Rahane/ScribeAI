@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
     FaHome,
@@ -11,6 +11,8 @@ import {
     FaBars,
     FaTimes
 } from "react-icons/fa";
+import volunteerService from "../../services/volunteerService";
+import API_BASE_URL from "../../config/api";
 
 const menuItems = [
     { label: "Dashboard", icon: <FaHome />, path: "/volunteer/dashboard" },
@@ -26,6 +28,19 @@ const VolunteerSidebar = () => {
     const navigate = useNavigate();
     const currentPath = location.pathname;
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [profile, setProfile] = useState(null);
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                const data = await volunteerService.getProfile();
+                setProfile(data);
+            } catch (err) {
+                console.error('Error fetching volunteer profile:', err);
+            }
+        };
+        fetchProfile();
+    }, []);
 
     const handleLogout = () => {
         localStorage.removeItem('user');
@@ -104,11 +119,19 @@ const VolunteerSidebar = () => {
                 {/* User Card - Row 3: Auto height, always visible */}
                 <div className="border-t border-white/10 p-4">
                     <div className="flex items-center gap-3 mb-3">
-                        <div className="bg-[#F63049] w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold">
-                            VL
-                        </div>
+                        {profile?.profilePicture ? (
+                            <img
+                                src={`${API_BASE_URL.replace('/api/v1', '')}${profile.profilePicture}`}
+                                alt="Profile"
+                                className="w-10 h-10 rounded-full object-cover border-2 border-gray-600"
+                            />
+                        ) : (
+                            <div className="bg-[#F63049] w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold">
+                                {profile?.fullName?.split(' ').map(n => n[0]).join('').toUpperCase() || 'VL'}
+                            </div>
+                        )}
                         <div>
-                            <p className="text-white text-sm font-medium">Volunteer</p>
+                            <p className="text-white text-sm font-medium">{profile?.fullName || 'Volunteer'}</p>
                             <p className="text-xs text-gray-400">Volunteer Account</p>
                         </div>
                     </div>

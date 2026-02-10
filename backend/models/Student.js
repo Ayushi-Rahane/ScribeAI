@@ -20,6 +20,18 @@ const studentSchema = new mongoose.Schema({
         type: Date,
         required: true
     },
+    city: {
+        type: String,
+        required: true
+    },
+    state: {
+        type: String,
+        required: true
+    },
+    profilePicture: {
+        type: String,
+        default: null
+    },
     university: {
         type: String,
         required: true

@@ -178,6 +178,38 @@ class RequestService {
     }
 
     /**
+     * Complete a request with rating and feedback
+     * @param {string} requestId - Request ID
+     * @param {number} rating - Rating (1-5)
+     * @param {string} feedback - Feedback text
+     * @returns {Promise<Object>} Completed request
+     */
+    async completeRequest(requestId, rating, feedback = '') {
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await fetch(`${API_BASE_URL}/requests/${requestId}/complete`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ rating, feedback })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Failed to complete request');
+        }
+
+        return data;
+    }
+
+    /**
      * Rate a volunteer after request completion
      * @param {string} requestId - Request ID
      * @param {number} rating - Rating (1-5)

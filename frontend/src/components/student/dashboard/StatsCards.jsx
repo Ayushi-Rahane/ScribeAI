@@ -1,38 +1,79 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { FaArrowUp, FaEllipsisH } from "react-icons/fa";
-
-const statsData = [
-    {
-        id: 1,
-        title: "Total Requests",
-        value: "12",
-        subtitle: "+2 this month",
-        type: "up",
-    },
-    {
-        id: 2,
-        title: "Upcoming Exams",
-        value: "3",
-        subtitle: "Next in 2 days",
-        type: "menu",
-    },
-    {
-        id: 3,
-        title: "Hours Saved",
-        value: "24h",
-        subtitle: "Total scribe time",
-        type: "up",
-    },
-    {
-        id: 4,
-        title: "Avg. Rating",
-        value: "4.9",
-        subtitle: "Based on feedback",
-        type: "up",
-    },
-];
+import requestService from "../../../services/requestService";
 
 const StatsCards = () => {
+    const [stats, setStats] = useState({
+        totalRequests: 0,
+        activeRequests: 0,
+        completedRequests: 0,
+        upcomingExams: 0
+    });
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchStats();
+    }, []);
+
+    const fetchStats = async () => {
+        try {
+            setLoading(true);
+
+            // Fetch active requests
+            const activeData = await requestService.getRequests();
+            const activeRequests = activeData.filter(r => r.status === 'pending' || r.status === 'matched');
+            const upcomingExams = activeData.filter(r => r.status === 'matched').length;
+
+            // Fetch history for completed requests
+            const historyData = await requestService.getHistory();
+            const completedRequests = historyData.filter(r => r.status === 'completed').length;
+
+            const totalRequests = activeRequests.length + completedRequests;
+
+            setStats({
+                totalRequests,
+                activeRequests: activeRequests.length,
+                completedRequests,
+                upcomingExams
+            });
+        } catch (err) {
+            console.error("Error fetching stats:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const statsData = [
+        {
+            id: 1,
+            title: "Total Requests",
+            value: loading ? "..." : stats.totalRequests.toString(),
+            subtitle: `${stats.completedRequests} completed`,
+            type: "up",
+        },
+        {
+            id: 2,
+            title: "Active Requests",
+            value: loading ? "..." : stats.activeRequests.toString(),
+            subtitle: stats.activeRequests > 0 ? "In progress" : "No active requests",
+            type: "menu",
+        },
+        {
+            id: 3,
+            title: "Upcoming Exams",
+            value: loading ? "..." : stats.upcomingExams.toString(),
+            subtitle: stats.upcomingExams > 0 ? "Scribes assigned" : "No upcoming exams",
+            type: "up",
+        },
+        {
+            id: 4,
+            title: "Completed",
+            value: loading ? "..." : stats.completedRequests.toString(),
+            subtitle: "Total completed",
+            type: "up",
+        },
+    ];
+
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {statsData.map((stat) => (

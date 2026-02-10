@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import StudentSidebar from "../../components/student/StudentSidebar";
 import studentService from "../../services/studentService";
 import authService from "../../services/authService";
+import API_BASE_URL from "../../config/api";
 
 const Profile = () => {
     const [showToast, setShowToast] = useState(false);
@@ -11,6 +12,9 @@ const Profile = () => {
     const [profile, setProfile] = useState(null);
     const [user, setUser] = useState(null);
     const [formData, setFormData] = useState({});
+    const [photoFile, setPhotoFile] = useState(null);
+    const [photoPreview, setPhotoPreview] = useState(null);
+    const [uploadingPhoto, setUploadingPhoto] = useState(false);
     const navigate = useNavigate();
 
     // Fetch profile data on component mount
@@ -39,7 +43,9 @@ const Profile = () => {
                     academicNotes: profileData?.academicNotes || '',
                     preferredLanguage: profileData?.preferredLanguage || '',
                     notificationMethod: profileData?.notificationMethod || '',
-                    preferredTime: profileData?.preferredTime || ''
+                    preferredTime: profileData?.preferredTime || '',
+                    city: profileData?.city || '',
+                    state: profileData?.state || ''
                 });
                 setLoading(false);
             } catch (err) {
@@ -93,11 +99,68 @@ const Profile = () => {
                 academicNotes: updatedProfile?.academicNotes || '',
                 preferredLanguage: updatedProfile?.preferredLanguage || '',
                 notificationMethod: updatedProfile?.notificationMethod || '',
-                preferredTime: updatedProfile?.preferredTime || ''
+                preferredTime: updatedProfile?.preferredTime || '',
+                city: updatedProfile?.city || '',
+                state: updatedProfile?.state || ''
             });
         } catch (err) {
             console.error("Error updating profile:", err);
             alert("Failed to update profile: " + err.message);
+        }
+    };
+
+    const handlePhotoChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file');
+                return;
+            }
+            // Validate file size (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File size must be less than 5MB');
+                return;
+            }
+            setPhotoFile(file);
+            // Create preview
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPhotoPreview(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handlePhotoUpload = async () => {
+        if (!photoFile) {
+            alert('Please select a photo first');
+            return;
+        }
+
+        try {
+            setUploadingPhoto(true);
+            const result = await studentService.uploadProfilePhoto(photoFile);
+
+            // Update profile with new photo
+            setProfile(prev => ({
+                ...prev,
+                profilePicture: result.profilePicture
+            }));
+
+            // Clear photo states
+            setPhotoFile(null);
+            setPhotoPreview(null);
+
+            setShowToast(true);
+            setTimeout(() => {
+                setShowToast(false);
+            }, 3000);
+        } catch (err) {
+            console.error("Error uploading photo:", err);
+            alert("Failed to upload photo: " + err.message);
+        } finally {
+            setUploadingPhoto(false);
         }
     };
 
@@ -159,9 +222,43 @@ const Profile = () => {
                     {/* Profile Card */}
                     <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-8">
                         {/* Avatar Section */}
-                        <div className="flex items-center gap-6 mb-8">
-                            <div className="w-20 h-20 rounded-full bg-[#F63049] text-white flex items-center justify-center text-2xl font-semibold">
-                                {getInitials(profile?.fullName)}
+                        <div className="flex flex-col md:flex-row items-center md:items-start gap-6 mb-8">
+                            <div className="flex flex-col items-center gap-3">
+                                {/* Avatar Display */}
+                                {photoPreview || profile?.profilePicture ? (
+                                    <img
+                                        src={photoPreview || `${API_BASE_URL.replace('/api/v1', '')}${profile.profilePicture}`}
+                                        alt="Profile"
+                                        className="w-24 h-24 rounded-full object-cover border-4 border-gray-200"
+                                    />
+                                ) : (
+                                    <div className="w-24 h-24 rounded-full bg-[#F63049] text-white flex items-center justify-center text-2xl font-semibold">
+                                        {getInitials(profile?.fullName)}
+                                    </div>
+                                )}
+
+                                {/* Upload Controls */}
+                                <div className="flex flex-col items-center gap-2">
+                                    <label className="cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm transition">
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handlePhotoChange}
+                                            className="hidden"
+                                        />
+                                        Choose Photo
+                                    </label>
+
+                                    {photoFile && (
+                                        <button
+                                            onClick={handlePhotoUpload}
+                                            disabled={uploadingPhoto}
+                                            className="bg-[#F63049] hover:bg-[#e12a40] text-white px-4 py-2 rounded-lg text-sm transition disabled:opacity-50"
+                                        >
+                                            {uploadingPhoto ? 'Uploading...' : 'Upload Photo'}
+                                        </button>
+                                    )}
+                                </div>
                             </div>
 
                             <div>
@@ -186,6 +283,8 @@ const Profile = () => {
                                 />
                                 <Input label="University / College" value={formData?.university || ""} onChange={(v) => handleInputChange('university', v)} />
                                 <Input label="Course / Program" value={formData?.course || ""} onChange={(v) => handleInputChange('course', v)} />
+                                <Input label="City" value={formData?.city || ""} onChange={(v) => handleInputChange('city', v)} />
+                                <Input label="State" value={formData?.state || ""} onChange={(v) => handleInputChange('state', v)} />
                             </div>
                         </div>
 

@@ -11,13 +11,22 @@ connectDB();
 
 const app = express();
 
-// Security middleware
-app.use(helmet());
+// Security middleware - Configure helmet to allow cross-origin resources
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 app.use(cors());
 
 // Body parser
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve static files (uploaded images) with CORS headers
+app.use('/uploads', (req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    next();
+}, express.static('uploads'));
 
 // Rate limiting
 app.use('/api/', apiLimiter);

@@ -54,7 +54,12 @@ const ExamDetails = ({ setStep, formData, updateFormData }) => {
                     <div>
                         <label className="block text-sm text-gray-600 mb-1">Date</label>
                         <input
-                            type="date"
+                            type={formData.examDate ? "date" : "text"}
+                            placeholder="Select Date"
+                            onFocus={(e) => (e.target.type = "date")}
+                            onBlur={(e) => {
+                                if (!e.target.value) e.target.type = "text";
+                            }}
                             value={formData.examDate}
                             onChange={(e) => updateFormData('examDate', e.target.value)}
                             className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#F63049]"
@@ -65,7 +70,12 @@ const ExamDetails = ({ setStep, formData, updateFormData }) => {
                     <div>
                         <label className="block text-sm text-gray-600 mb-1">Time</label>
                         <input
-                            type="time"
+                            type={formData.examTime ? "time" : "text"}
+                            placeholder="Select Time"
+                            onFocus={(e) => (e.target.type = "time")}
+                            onBlur={(e) => {
+                                if (!e.target.value) e.target.type = "text";
+                            }}
                             value={formData.examTime}
                             onChange={(e) => updateFormData('examTime', e.target.value)}
                             className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#F63049]"

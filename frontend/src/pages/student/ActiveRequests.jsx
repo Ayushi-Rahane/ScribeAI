@@ -8,6 +8,9 @@ const ActiveRequests = () => {
     const [deleteConfirm, setDeleteConfirm] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [completionModal, setCompletionModal] = useState(null); // { requestId, volunteerName }
+    const [rating, setRating] = useState(0);
+    const [feedback, setFeedback] = useState('');
 
     // Fetch requests on component mount
     useEffect(() => {
@@ -71,6 +74,26 @@ const ActiveRequests = () => {
         } catch (err) {
             console.error("Error deleting request:", err);
             alert("Failed to cancel request: " + err.message);
+        }
+    };
+
+    const handleCompleteRequest = async () => {
+        if (rating === 0) {
+            alert("Please provide a rating before completing");
+            return;
+        }
+
+        try {
+            await requestService.completeRequest(completionModal.requestId, rating, feedback);
+            // Remove from active requests list
+            setRequests(requests.filter(req => req.id !== completionModal.requestId));
+            // Close modal and reset
+            setCompletionModal(null);
+            setRating(0);
+            setFeedback('');
+        } catch (err) {
+            console.error("Error completing request:", err);
+            alert("Failed to complete request: " + err.message);
         }
     };
 
@@ -153,6 +176,7 @@ const ActiveRequests = () => {
                                             deleteConfirm={deleteConfirm === request.id}
                                             onConfirmDelete={() => handleDelete(request.id)}
                                             onCancelDelete={() => setDeleteConfirm(null)}
+                                            onComplete={() => setCompletionModal({ requestId: request.id, volunteerName: request.volunteer })}
                                         />
                                     ))
                                 )}
@@ -161,6 +185,66 @@ const ActiveRequests = () => {
                     )}
                 </div>
             </div>
+
+            {/* Completion Modal */}
+            {completionModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+                        <h3 className="text-xl font-bold text-[#111F35] mb-4">Complete Request</h3>
+                        <p className="text-gray-600 mb-6">
+                            Rate your experience with <span className="font-semibold">{completionModal.volunteerName}</span>
+                        </p>
+
+                        {/* Star Rating */}
+                        <div className="mb-6">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Rating *</label>
+                            <div className="flex gap-2">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                    <button
+                                        key={star}
+                                        onClick={() => setRating(star)}
+                                        className="text-3xl transition-colors"
+                                    >
+                                        {star <= rating ? '⭐' : '☆'}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Feedback */}
+                        <div className="mb-6">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Feedback (Optional)</label>
+                            <textarea
+                                value={feedback}
+                                onChange={(e) => setFeedback(e.target.value)}
+                                placeholder="Share your experience with this volunteer..."
+                                className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#F63049] focus:border-transparent"
+                                rows="4"
+                            />
+                        </div>
+
+                        {/* Buttons */}
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => {
+                                    setCompletionModal(null);
+                                    setRating(0);
+                                    setFeedback('');
+                                }}
+                                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleCompleteRequest}
+                                className="flex-1 px-4 py-2 bg-[#F63049] text-white rounded-lg hover:bg-[#e12a40] transition"
+                            >
+                                Complete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
@@ -182,7 +266,7 @@ const StatCard = ({ title, value, color }) => {
     );
 };
 
-const RequestCard = ({ request, onDelete, deleteConfirm, onConfirmDelete, onCancelDelete }) => {
+const RequestCard = ({ request, onDelete, deleteConfirm, onConfirmDelete, onCancelDelete, onComplete }) => {
     const statusColors = {
         "Matching in Progress": "bg-orange-100 text-orange-700",
         "Pending": "bg-yellow-100 text-yellow-700",
@@ -266,10 +350,18 @@ const RequestCard = ({ request, onDelete, deleteConfirm, onConfirmDelete, onCanc
 
                 {/* Matched Info */}
                 {request.status === "Matched" && (
-                    <div className="mt-4 bg-green-50 border border-green-200 rounded-lg p-3">
-                        <p className="text-sm text-green-700">
-                            ✓ Matched with <span className="font-semibold">{request.volunteer}</span>
-                        </p>
+                    <div className="mt-4">
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
+                            <p className="text-sm text-green-700">
+                                ✓ Matched with <span className="font-semibold">{request.volunteer}</span>
+                            </p>
+                        </div>
+                        <button
+                            onClick={onComplete}
+                            className="w-full bg-[#F63049] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#e12a40] transition"
+                        >
+                            Mark as Complete
+                        </button>
                     </div>
                 )}
             </div>

@@ -1,10 +1,127 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaBell, FaCheckCircle, FaClock, FaStar, FaClipboardList } from "react-icons/fa";
 import VolunteerSidebar from "../../components/volunteer/VolunteerSidebar";
+import volunteerService from "../../services/volunteerService";
 
 const VolunteerDashboard = () => {
     const navigate = useNavigate();
+    const [profile, setProfile] = useState(null);
+    const [stats, setStats] = useState({
+        totalRequests: 0,
+        activeAssignments: 0,
+        pendingRequests: 0,
+        averageRating: 0
+    });
+    const [recentActivity, setRecentActivity] = useState([]);
+    const [upcomingAssignments, setUpcomingAssignments] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchDashboardData();
+    }, []);
+
+    const fetchDashboardData = async () => {
+        try {
+            setLoading(true);
+
+            // Fetch volunteer profile
+            const profileData = await volunteerService.getProfile();
+            setProfile(profileData);
+
+            // Fetch incoming requests (pending)
+            const incomingData = await volunteerService.getIncomingRequests();
+            const pendingRequests = incomingData.length;
+
+            // Fetch active assignments
+            const activeData = await volunteerService.getActiveAssignments();
+            const activeAssignments = activeData.length;
+
+            // Fetch history for completed assignments
+            const historyData = await volunteerService.getHistory();
+            const completedAssignments = historyData.filter(r => r.status === 'completed').length;
+
+            // Calculate stats
+            const totalRequests = pendingRequests + activeAssignments + completedAssignments;
+            const averageRating = profileData.rating || 0;
+
+            setStats({
+                totalRequests,
+                activeAssignments,
+                pendingRequests,
+                averageRating
+            });
+
+            // Prepare recent activity
+            const activities = [];
+
+            // Add recent incoming requests
+            incomingData.slice(0, 2).forEach(req => {
+                const timeAgo = getTimeAgo(new Date(req.createdAt));
+                activities.push({
+                    id: req._id,
+                    title: `New request from ${req.studentId?.fullName || 'Student'}`,
+                    time: timeAgo,
+                    type: 'new'
+                });
+            });
+
+            // Add recent completed assignments
+            historyData.slice(0, 1).forEach(req => {
+                const timeAgo = getTimeAgo(new Date(req.updatedAt));
+                activities.push({
+                    id: req._id,
+                    title: `Completed assignment for ${req.examName}`,
+                    time: timeAgo,
+                    type: 'completed'
+                });
+            });
+
+            setRecentActivity(activities.slice(0, 3));
+
+            // Prepare upcoming assignments
+            const upcoming = activeData
+                .sort((a, b) => new Date(a.examDate) - new Date(b.examDate))
+                .slice(0, 3)
+                .map(req => ({
+                    id: req._id,
+                    subject: req.examName,
+                    student: req.studentId?.fullName || 'Student',
+                    date: new Date(req.examDate).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                    }),
+                    time: new Date(req.examDate).toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        minute: '2-digit'
+                    })
+                }));
+
+            setUpcomingAssignments(upcoming);
+
+        } catch (err) {
+            console.error("Error fetching dashboard data:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const getTimeAgo = (date) => {
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+
+        if (diffMins < 60) return `${diffMins} min${diffMins !== 1 ? 's' : ''} ago`;
+        if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+        if (diffDays === 1) return '1 day ago';
+        if (diffDays < 7) return `${diffDays} days ago`;
+        return date.toLocaleDateString();
+    };
+
+    const firstName = profile?.fullName?.split(' ')[0] || 'Volunteer';
 
     return (
         <div className="min-h-screen bg-[#F7F9FC] flex">
@@ -23,8 +140,19 @@ const VolunteerDashboard = () => {
                 <main className="p-4 md:p-6 space-y-4 md:space-y-6">
                     {/* Welcome */}
                     <div>
-                        <h1 className="text-xl md:text-2xl font-bold text-[#111F35]">Welcome Back, Volunteer!</h1>
-                        <p className="text-sm md:text-base text-gray-500">Here's your volunteering overview</p>
+                        {loading ? (
+                            <>
+                                <h1 className="text-xl md:text-2xl font-bold text-[#111F35]">Loading...</h1>
+                                <p className="text-sm md:text-base text-gray-500">Please wait</p>
+                            </>
+                        ) : (
+                            <>
+                                <h1 className="text-xl md:text-2xl font-bold text-[#111F35]">
+                                    Welcome Back, {firstName}!
+                                </h1>
+                                <p className="text-sm md:text-base text-gray-500">Here's your volunteering overview</p>
+                            </>
+                        )}
                     </div>
 
                     {/* Stats Cards */}
@@ -32,25 +160,25 @@ const VolunteerDashboard = () => {
                         <StatCard
                             icon={<FaClipboardList />}
                             title="Total Requests"
-                            value="24"
+                            value={loading ? "..." : stats.totalRequests.toString()}
                             color="blue"
                         />
                         <StatCard
                             icon={<FaCheckCircle />}
                             title="Active Assignments"
-                            value="3"
+                            value={loading ? "..." : stats.activeAssignments.toString()}
                             color="green"
                         />
                         <StatCard
                             icon={<FaClock />}
                             title="Pending Requests"
-                            value="5"
+                            value={loading ? "..." : stats.pendingRequests.toString()}
                             color="orange"
                         />
                         <StatCard
                             icon={<FaStar />}
                             title="Average Rating"
-                            value="4.8"
+                            value={loading ? "..." : stats.averageRating.toFixed(1)}
                             color="yellow"
                         />
                     </div>
@@ -58,42 +186,33 @@ const VolunteerDashboard = () => {
                     {/* Recent Activity */}
                     <div className="bg-white rounded-xl p-6 shadow-sm">
                         <h3 className="text-lg font-semibold text-[#111F35] mb-4">Recent Activity</h3>
-                        <div className="space-y-3">
-                            <ActivityItem
-                                title="New request from John Doe"
-                                time="2 hours ago"
-                                type="new"
-                            />
-                            <ActivityItem
-                                title="Completed assignment for Physics Exam"
-                                time="1 day ago"
-                                type="completed"
-                            />
-                            <ActivityItem
-                                title="Received 5-star rating"
-                                time="2 days ago"
-                                type="rating"
-                            />
-                        </div>
+                        {loading ? (
+                            <p className="text-gray-500 text-sm">Loading...</p>
+                        ) : recentActivity.length === 0 ? (
+                            <p className="text-gray-500 text-sm">No recent activity</p>
+                        ) : (
+                            <div className="space-y-3">
+                                {recentActivity.map((activity) => (
+                                    <ActivityItem key={activity.id} {...activity} />
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* Upcoming Assignments */}
                     <div className="bg-white rounded-xl p-6 shadow-sm">
                         <h3 className="text-lg font-semibold text-[#111F35] mb-4">Upcoming Assignments</h3>
-                        <div className="space-y-3">
-                            <AssignmentCard
-                                subject="Advanced Calculus"
-                                student="Sarah Johnson"
-                                date="Oct 25, 2024"
-                                time="10:00 AM"
-                            />
-                            <AssignmentCard
-                                subject="Physics 101"
-                                student="Mike Chen"
-                                date="Oct 27, 2024"
-                                time="2:00 PM"
-                            />
-                        </div>
+                        {loading ? (
+                            <p className="text-gray-500 text-sm">Loading...</p>
+                        ) : upcomingAssignments.length === 0 ? (
+                            <p className="text-gray-500 text-sm">No upcoming assignments</p>
+                        ) : (
+                            <div className="space-y-3">
+                                {upcomingAssignments.map((assignment) => (
+                                    <AssignmentCard key={assignment.id} {...assignment} />
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </main>
             </div>

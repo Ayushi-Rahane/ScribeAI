@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { protect, authorize } = require('../middleware/auth');
+const upload = require('../middleware/upload');
 const Student = require('../models/Student');
 const Request = require('../models/Request');
 
@@ -104,11 +105,18 @@ router.post('/requests', protect, authorize('student'), async (req, res, next) =
 router.get('/requests', protect, authorize('student'), async (req, res, next) => {
     try {
         const student = await Student.findOne({ userId: req.user._id });
+
+        if (!student) {
+            return res.status(404).json({ message: 'Student profile not found' });
+        }
+
         const requests = await Request.find({ studentId: student._id })
             .populate('volunteerId', 'fullName phone rating')
             .sort('-createdAt');
+
         res.json(requests);
     } catch (error) {
+        console.error('Error fetching student requests:', error);
         next(error);
     }
 });
@@ -126,6 +134,39 @@ router.get('/history', protect, authorize('student'), async (req, res, next) => 
             .populate('volunteerId', 'fullName rating')
             .sort('-createdAt');
         res.json(history);
+    } catch (error) {
+        next(error);
+    }
+});
+
+// @desc    Upload student profile photo
+// @route   POST /api/v1/students/profile/photo
+// @access  Private (Student)
+router.post('/profile/photo', protect, authorize('student'), upload.single('photo'), async (req, res, next) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: 'Please upload a photo' });
+        }
+
+        // Construct the photo URL
+        const photoUrl = `/uploads/profiles/${req.file.filename}`;
+
+        // Update student profile with photo URL
+        const student = await Student.findOneAndUpdate(
+            { userId: req.user._id },
+            { profilePicture: photoUrl },
+            { new: true, runValidators: true }
+        );
+
+        if (!student) {
+            return res.status(404).json({ message: 'Student profile not found' });
+        }
+
+        res.json({
+            message: 'Photo uploaded successfully',
+            profilePicture: photoUrl,
+            student
+        });
     } catch (error) {
         next(error);
     }

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     FaBell,
@@ -10,13 +10,34 @@ import TipsCard from "../../components/student/dashboard/TipsCard";
 import UpcomingSchedule from "../../components/student/dashboard/UpcomingSchedule";
 import StatsCards from "../../components/student/dashboard/StatsCards";
 import ActiveRequest from "../../components/student/dashboard/ActiveRequest";
+import studentService from "../../services/studentService";
 
 const StudentDashboard = () => {
     const navigate = useNavigate();
+    const [profile, setProfile] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchProfile();
+    }, []);
+
+    const fetchProfile = async () => {
+        try {
+            setLoading(true);
+            const data = await studentService.getProfile();
+            setProfile(data);
+        } catch (err) {
+            console.error("Error fetching profile:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleNewRequest = () => {
         navigate('/student/request');
     };
+
+    const firstName = profile?.fullName?.split(' ')[0] || 'Student';
 
     return (
         <div className="min-h-screen bg-[#F7F9FC] flex">
@@ -48,7 +69,13 @@ const StudentDashboard = () => {
                     {/* Welcome */}
                     <div>
                         <h1 className="text-xl md:text-2xl font-bold text-[#111F35]">Dashboard</h1>
-                        <p className="text-sm md:text-base text-gray-500">Welcome back, John! Here's what's happening today.</p>
+                        {loading ? (
+                            <p className="text-sm md:text-base text-gray-500">Loading...</p>
+                        ) : (
+                            <p className="text-sm md:text-base text-gray-500">
+                                Welcome back, {firstName}! Here's what's happening today.
+                            </p>
+                        )}
                     </div>
 
                     {/* Stats */}
@@ -81,23 +108,5 @@ const StudentDashboard = () => {
         </div>
     );
 };
-
-/* Components */
-
-const SideItem = ({ icon, label, active }) => (
-    <div className={`flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer text-sm
-    ${active ? "bg-[#F63049] text-white" : "hover:bg-[#1c2e4a]"}
-  `}>
-        {icon} {label}
-    </div>
-);
-
-const Stat = ({ title, value, note }) => (
-    <div className="bg-white rounded-xl p-4 shadow-sm">
-        <p className="text-sm text-gray-500">{title}</p>
-        <h3 className="text-2xl font-bold">{value}</h3>
-        <p className="text-xs text-gray-400">{note}</p>
-    </div>
-);
 
 export default StudentDashboard;

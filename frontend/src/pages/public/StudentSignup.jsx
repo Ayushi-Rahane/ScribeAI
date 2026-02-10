@@ -18,6 +18,8 @@ const StudentSignup = () => {
         dateOfBirth: "",
         university: "",
         course: "",
+        city: "",
+        state: "",
 
         // Disability Information
         disabilityType: "",
@@ -97,6 +99,8 @@ const StudentSignup = () => {
                 preferredLanguage: formData.preferredLanguage,
                 notificationMethod: formData.notificationMethod,
                 preferredTime: formData.preferredTime,
+                city: formData.city,
+                state: formData.state,
             };
 
             // Call backend API
@@ -239,6 +243,20 @@ const StudentSignup = () => {
                                         label="Course / Program"
                                         name="course"
                                         value={formData.course}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                    <InputField
+                                        label="City"
+                                        name="city"
+                                        value={formData.city || ""}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                    <InputField
+                                        label="State"
+                                        name="state"
+                                        value={formData.state || ""}
                                         onChange={handleChange}
                                         required
                                     />

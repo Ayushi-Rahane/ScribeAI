@@ -15,6 +15,7 @@ import {
 } from "react-icons/fa";
 import studentService from "../../services/studentService";
 import authService from "../../services/authService";
+import API_BASE_URL from "../../config/api";
 
 const menuItems = [
     { label: "Dashboard", icon: <FaHome />, path: "/student/dashboard" },
@@ -32,6 +33,7 @@ const DashboardSidebar = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [studentName, setStudentName] = useState("Loading...");
     const [studentInitials, setStudentInitials] = useState("??");
+    const [profilePicture, setProfilePicture] = useState(null);
 
     // Fetch student profile
     useEffect(() => {
@@ -46,6 +48,8 @@ const DashboardSidebar = () => {
                         ? `${parts[0][0]}${parts[1][0]}`.toUpperCase()
                         : profile.fullName.substring(0, 2).toUpperCase();
                     setStudentInitials(initials);
+                    // Set profile picture
+                    setProfilePicture(profile.profilePicture);
                 }
             } catch (err) {
                 console.error("Error fetching profile:", err);
@@ -138,9 +142,17 @@ const DashboardSidebar = () => {
                 {/* User Card - Row 3: Auto height, always visible */}
                 <div className="border-t border-white/10 p-4">
                     <div className="flex items-center gap-3 mb-3">
-                        <div className="bg-[#F63049] w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold">
-                            {studentInitials}
-                        </div>
+                        {profilePicture ? (
+                            <img
+                                src={`${API_BASE_URL.replace('/api/v1', '')}${profilePicture}`}
+                                alt="Profile"
+                                className="w-10 h-10 rounded-full object-cover border-2 border-gray-600"
+                            />
+                        ) : (
+                            <div className="bg-[#F63049] w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold">
+                                {studentInitials}
+                            </div>
+                        )}
                         <div>
                             <p className="text-white text-sm font-medium">{studentName}</p>
                             <p className="text-xs text-gray-400">Student Account</p>

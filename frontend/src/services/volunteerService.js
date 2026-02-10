@@ -171,6 +171,65 @@ class VolunteerService {
 
         return data;
     }
+
+    /**
+     * Get volunteer statistics (rating, reviews, completed assignments)
+     * @returns {Promise<Object>} Volunteer stats
+     */
+    async getStats() {
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await fetch(`${API_BASE_URL}/volunteers/stats`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Failed to fetch stats');
+        }
+
+        return data;
+    }
+
+    /**
+     * Upload profile photo
+     * @param {File} file - Image file to upload
+     * @returns {Promise<Object>} Updated profile with photo URL
+     */
+    async uploadProfilePhoto(file) {
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        const formData = new FormData();
+        formData.append('photo', file);
+
+        const response = await fetch(`${API_BASE_URL}/volunteers/profile/photo`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Failed to upload photo');
+        }
+
+        return data;
+    }
 }
 
 export default new VolunteerService();

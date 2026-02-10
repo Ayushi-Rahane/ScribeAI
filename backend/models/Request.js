@@ -60,7 +60,11 @@ const requestSchema = new mongoose.Schema({
     isPaid: {
         type: Boolean,
         default: false
-    }
+    },
+    // Reference materials
+    materials: [{
+        type: String
+    }]
 }, {
     timestamps: true
 });

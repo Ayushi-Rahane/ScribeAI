@@ -116,6 +116,128 @@ class StudentService {
 
         return data;
     }
+
+    /**
+     * Get all available volunteers
+     * @returns {Promise<Array>} List of available volunteers
+     */
+    async getAvailableVolunteers() {
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await fetch(`${API_BASE_URL}/volunteers`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Failed to fetch volunteers');
+        }
+
+        return data;
+    }
+
+    /**
+     * Upload profile photo
+     * @param {File} file - Image file to upload
+     * @returns {Promise<Object>} Updated profile with photo URL
+     */
+    async uploadProfilePhoto(file) {
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        const formData = new FormData();
+        formData.append('photo', file);
+
+        const response = await fetch(`${API_BASE_URL}/students/profile/photo`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Failed to upload photo');
+        }
+
+        return data;
+    }
+
+    /**
+     * Upload request materials
+     * @param {string} requestId - Request ID
+     * @param {File} file - File to upload
+     * @returns {Promise<Object>} Updated request
+     */
+    async uploadRequestMaterials(requestId, file) {
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        const formData = new FormData();
+        formData.append('materials', file);
+
+        const response = await fetch(`${API_BASE_URL}/requests/${requestId}/materials`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Failed to upload materials');
+        }
+
+        return data;
+    }
+    /**
+     * Delete request material
+     * @param {string} requestId - Request ID
+     * @param {string} filename - Filename to delete
+     * @returns {Promise<Object>} Updated request
+     */
+    async deleteRequestMaterial(requestId, filename) {
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await fetch(`${API_BASE_URL}/requests/${requestId}/materials`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ filename })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Failed to delete material');
+        }
+
+        return data;
+    }
 }
 
 export default new StudentService();

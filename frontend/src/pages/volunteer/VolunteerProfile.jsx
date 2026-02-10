@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { FaSave, FaMapMarkerAlt, FaClock, FaBook, FaLanguage, FaMoneyBillWave, FaUser } from "react-icons/fa";
+import { FaSave, FaMapMarkerAlt, FaClock, FaBook, FaLanguage, FaMoneyBillWave, FaUser, FaStar } from "react-icons/fa";
 import VolunteerSidebar from "../../components/volunteer/VolunteerSidebar";
 import volunteerService from "../../services/volunteerService";
+import API_BASE_URL from "../../config/api";
 
 const VolunteerProfile = () => {
     const [showToast, setShowToast] = useState(false);
@@ -40,13 +41,26 @@ const VolunteerProfile = () => {
         remoteAvailable: false,
     });
 
+    const [stats, setStats] = useState({
+        averageRating: 0,
+        totalReviews: 0,
+        completedAssignments: 0
+    });
+
+    const [photoFile, setPhotoFile] = useState(null);
+    const [photoPreview, setPhotoPreview] = useState(null);
+    const [uploadingPhoto, setUploadingPhoto] = useState(false);
+
     // Fetch profile data on mount
     useEffect(() => {
         const fetchProfile = async () => {
             try {
                 setLoading(true);
                 const data = await volunteerService.getProfile();
+                const statsData = await volunteerService.getStats();
+
                 setProfile(data);
+                setStats(statsData);
 
                 // Populate form fields with fetched data
                 if (data) {
@@ -135,6 +149,61 @@ const VolunteerProfile = () => {
         }));
     };
 
+    const handlePhotoChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file');
+                return;
+            }
+            // Validate file size (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File size must be less than 5MB');
+                return;
+            }
+            setPhotoFile(file);
+            // Create preview
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPhotoPreview(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handlePhotoUpload = async () => {
+        if (!photoFile) {
+            alert('Please select a photo first');
+            return;
+        }
+
+        try {
+            setUploadingPhoto(true);
+            const result = await volunteerService.uploadProfilePhoto(photoFile);
+
+            // Update profile with new photo
+            setProfile(prev => ({
+                ...prev,
+                profilePicture: result.profilePicture
+            }));
+
+            // Clear photo states
+            setPhotoFile(null);
+            setPhotoPreview(null);
+
+            setShowToast(true);
+            setTimeout(() => {
+                setShowToast(false);
+            }, 3000);
+        } catch (err) {
+            console.error("Error uploading photo:", err);
+            alert("Failed to upload photo: " + err.message);
+        } finally {
+            setUploadingPhoto(false);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-[#F7F9FC] flex">
             <VolunteerSidebar />
@@ -166,26 +235,85 @@ const VolunteerProfile = () => {
                             <h1 className="text-2xl font-bold text-[#111F35] mb-6">My Profile</h1>
 
                             <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8 space-y-8">
-                                {/* Profile Picture Section */}
                                 <section>
                                     <h2 className="text-lg font-semibold text-[#111F35] mb-4 flex items-center gap-2">
                                         <FaUser className="text-[#F63049]" />
                                         Profile Picture
                                     </h2>
-                                    <div className="flex items-center gap-6">
-                                        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#F63049] to-[#d9283f] text-white flex items-center justify-center text-3xl font-semibold overflow-hidden">
-                                            <img
-                                                src="https://via.placeholder.com/150"
-                                                alt="Profile"
-                                                className="w-full h-full object-cover"
-                                            />
+                                    <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+                                        <div className="flex flex-col items-center gap-3">
+                                            {/* Avatar Display */}
+                                            {photoPreview || profile?.profilePicture ? (
+                                                <img
+                                                    src={photoPreview || `${API_BASE_URL.replace('/api/v1', '')}${profile.profilePicture}`}
+                                                    alt="Profile"
+                                                    className="w-24 h-24 rounded-full object-cover border-4 border-gray-200"
+                                                />
+                                            ) : (
+                                                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#F63049] to-[#d9283f] text-white flex items-center justify-center text-3xl font-semibold">
+                                                    {profile?.fullName?.split(' ').map(n => n[0]).join('').toUpperCase() || 'V'}
+                                                </div>
+                                            )}
+
+                                            {/* Upload Controls */}
+                                            <div className="flex flex-col items-center gap-2">
+                                                <label className="cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm transition">
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={handlePhotoChange}
+                                                        className="hidden"
+                                                    />
+                                                    Choose Photo
+                                                </label>
+
+                                                {photoFile && (
+                                                    <button
+                                                        onClick={handlePhotoUpload}
+                                                        disabled={uploadingPhoto}
+                                                        className="bg-[#F63049] hover:bg-[#e12a40] text-white px-4 py-2 rounded-lg text-sm transition disabled:opacity-50"
+                                                    >
+                                                        {uploadingPhoto ? 'Uploading...' : 'Upload Photo'}
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
                                         <div>
-                                            <label className="bg-[#F63049] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#d9283f] transition cursor-pointer inline-block">
-                                                Upload Photo
-                                                <input type="file" accept="image/*" className="hidden" />
-                                            </label>
-                                            <p className="text-xs text-gray-500 mt-2">JPG, PNG or GIF. Max size 2MB.</p>
+                                            <p className="text-sm text-gray-600 mb-1">Upload your profile picture</p>
+                                            <p className="text-xs text-gray-500">JPG, PNG or GIF. Max size 5MB.</p>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                {/* Rating & Performance Stats */}
+                                <section>
+                                    <h2 className="text-lg font-semibold text-[#111F35] mb-4 flex items-center gap-2">
+                                        <FaStar className="text-[#F63049]" />
+                                        Rating & Performance
+                                    </h2>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div className="bg-gradient-to-br from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-4">
+                                            <p className="text-sm text-gray-600 mb-1">Average Rating</p>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-3xl font-bold text-[#F63049]">
+                                                    {stats.averageRating.toFixed(1)}
+                                                </span>
+                                                <div className="flex text-yellow-500 text-xl">
+                                                    {[1, 2, 3, 4, 5].map((star) => (
+                                                        <span key={star}>
+                                                            {star <= Math.round(stats.averageRating) ? '⭐' : '☆'}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4">
+                                            <p className="text-sm text-gray-600 mb-1">Total Reviews</p>
+                                            <p className="text-3xl font-bold text-blue-600">{stats.totalReviews}</p>
+                                        </div>
+                                        <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4">
+                                            <p className="text-sm text-gray-600 mb-1">Completed Assignments</p>
+                                            <p className="text-3xl font-bold text-green-600">{stats.completedAssignments}</p>
                                         </div>
                                     </div>
                                 </section>
