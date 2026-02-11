@@ -1,7 +1,7 @@
 @echo off
-TITLE ScribeConnect - One-Click Setup & Run
+TITLE ScribeConnect - One-Click Setup ^& Run
 echo ==========================================
-echo    ScribeConnect - One-Click Setup & Run
+echo    ScribeConnect - One-Click Setup ^& Run
 echo ==========================================
 
 :: Check for Node.js
