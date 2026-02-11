@@ -1,7 +1,6 @@
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { useState } from "react";
-import InputField from "../InputField";
-import SelectField from "../SelectField";
+
 
 const durations = ["1 hour", "2 hours", "3 hours", "4 hours"];
 

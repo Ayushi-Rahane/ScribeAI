@@ -57,19 +57,19 @@ const RecentActivity = () => {
 
                 if (req.status === 'completed') {
                     title = "Request Completed";
-                    desc = `${req.examName} - Rated ${req.rating || 'N/A'} stars`;
+                    desc = `${req.subject} - Rated ${req.rating || 'N/A'} stars`;
                     type = "completed";
                 } else if (req.status === 'matched') {
                     title = "Scribe Assigned";
-                    desc = `${req.examName} - ${req.volunteerId?.fullName || 'Volunteer assigned'}`;
+                    desc = `${req.subject} - ${req.volunteerId?.fullName || 'Volunteer assigned'}`;
                     type = "matched";
                 } else if (req.status === 'pending') {
                     title = "Request Created";
-                    desc = `${req.examName} - Waiting for match`;
+                    desc = `${req.subject} - Waiting for match`;
                     type = "pending";
                 } else {
                     title = "Request Created";
-                    desc = req.examName;
+                    desc = req.subject;
                     type = "created";
                 }
 

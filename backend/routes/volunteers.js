@@ -64,17 +64,88 @@ router.put('/profile', protect, authorize('volunteer'), async (req, res, next) =
     }
 });
 
-// @desc    Get incoming requests
+// @desc    Get incoming requests (Matched by Location & Education)
 // @route   GET /api/v1/volunteers/incoming
 // @access  Private (Volunteer)
 router.get('/incoming', protect, authorize('volunteer'), async (req, res, next) => {
     try {
-        const requests = await Request.find({
+        const volunteer = await Volunteer.findOne({ userId: req.user._id });
+
+        if (!volunteer) {
+            return res.status(404).json({ message: 'Volunteer profile not found' });
+        }
+
+        // 1. Find Students in the same City & State
+        // This implements the Location-based filtering (Strict)
+        const Student = require('../models/Student');
+        const studentsInLocation = await Student.find({
+            city: { $regex: new RegExp('^' + volunteer.city + '$', 'i') }, // Case-insensitive match
+            state: { $regex: new RegExp('^' + volunteer.state + '$', 'i') }
+        }).select('_id');
+
+        const studentIds = studentsInLocation.map(s => s._id);
+
+        if (studentIds.length === 0) {
+            return res.json([]); // No students in this location
+        }
+
+        // 2. Fetch Pending Requests from these Students
+        let requests = await Request.find({
             status: 'pending',
-            volunteerId: null
+            volunteerId: null,
+            studentId: { $in: studentIds }
         })
-            .populate('studentId', 'fullName university disabilityType specificNeeds profilePicture')
+            .populate('studentId', 'fullName university disabilityType specificNeeds profilePicture course currentYear city state')
             .sort('-createdAt');
+
+        // 3. Education/Subject Matching (Soft Filter / AI Matching Score)
+        // We add a 'matchScore' to prioritize relevant requests
+        // Keywords: Check if request subject or student course matches volunteer subjects
+
+        requests = requests.map(request => {
+            const reqObj = request.toObject();
+            let score = 0;
+            const reasons = [];
+
+            // Base score for location match (already filtered)
+            score += 50;
+
+            // Subject Matching
+            // Simple keyword matching
+            if (volunteer.subjects && volunteer.subjects.length > 0) {
+                const requestSubject = request.subject.toLowerCase();
+                const studentCourse = request.studentId.course.toLowerCase();
+
+                const hasMatch = volunteer.subjects.some(sub => {
+                    const s = sub.toLowerCase();
+                    return requestSubject.includes(s) || s.includes(requestSubject) ||
+                        studentCourse.includes(s) || s.includes(studentCourse);
+                });
+
+                if (hasMatch) {
+                    score += 30;
+                    reasons.push('Subject match');
+                }
+            } else {
+                // If volunteer has no specific subjects, assume they are open to general requests
+                score += 10;
+            }
+
+            // Language Matching (if request had language, currently Student has preferredLanguage)
+            if (volunteer.languages && volunteer.languages.length > 0) {
+                const studentLang = request.studentId.preferredLanguage || "";
+                if (volunteer.languages.some(l => l.toLowerCase() === studentLang.toLowerCase())) {
+                    score += 20;
+                    reasons.push('Language match');
+                }
+            }
+
+            return { ...reqObj, matchScore: score, matchReasons: reasons };
+        });
+
+        // Sort by Match Score
+        requests.sort((a, b) => b.matchScore - a.matchScore);
+
         res.json(requests);
     } catch (error) {
         next(error);
