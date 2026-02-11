@@ -139,7 +139,7 @@ const StudentSignup = () => {
                         </svg>
                     </div>
                     <h1 className="text-3xl font-bold text-[#111F35]">Student Registration</h1>
-                    <p className="text-gray-500 mt-2">Create your ScribeAI account</p>
+                    <p className="text-gray-500 mt-2">Create your ScribeConnect account</p>
                 </div>
 
                 {/* Progress Stepper */}

@@ -63,7 +63,7 @@ const LoginPage = () => {
             </div>
 
             <h1 className="text-2xl font-semibold text-[#111F35] mb-1">
-                Welcome to ScribeAI
+                Welcome to ScribeConnect
             </h1>
             <p className="text-gray-500 mb-6 text-sm">
                 Sign in to access your dashboard

@@ -98,7 +98,7 @@ const VolunteerSidebar = () => {
                             stroke="#F63049"
                             strokeWidth="1"></path>
                     </svg>
-                    ScribeAI
+                    ScribeConnect
                 </div>
 
                 {/* Menu - Row 2: Takes remaining space and scrolls */}

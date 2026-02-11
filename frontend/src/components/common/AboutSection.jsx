@@ -17,7 +17,7 @@ const AboutSection = () => {
                     <div className="bg-[#F7F9FC] rounded-2xl shadow-lg p-6 max-w-md w-full">
                         <img
                             src="/about-illustration.png"
-                            alt="About ScribeAI"
+                            alt="About ScribeConnect"
                             className="w-full h-auto"
                         />
                     </div>
@@ -32,7 +32,7 @@ const AboutSection = () => {
                 >
                     {/* Badge */}
                     <span className="inline-block mb-4 px-4 py-1.5 rounded-full bg-red-50 text-[#F63049] text-sm font-medium">
-                        About ScribeAI
+                        About ScribeConnect
                     </span>
 
                     {/* Title */}
@@ -43,14 +43,14 @@ const AboutSection = () => {
 
                     {/* Description */}
                     <p className="text-gray-600 text-lg mb-6 max-w-xl">
-                        ScribeAI is an AI-powered platform designed to connect students with disabilities
+                        ScribeConnect is an AI-powered platform designed to connect students with disabilities
                         to verified volunteer scribes quickly and safely. Our mission is to ensure that
                         no student is limited by accessibility barriers in their academic journey.
                     </p>
 
                     <p className="text-gray-600 text-lg mb-8 max-w-xl">
                         With intelligent matching, urgent request handling, and trust-based verification,
-                        ScribeAI creates a reliable ecosystem where students receive timely support and
+                        ScribeConnect creates a reliable ecosystem where students receive timely support and
                         volunteers are recognized for their contributions.
                     </p>
 

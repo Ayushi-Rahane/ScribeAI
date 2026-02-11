@@ -1,4 +1,4 @@
-ScribeAI: AI-Powered Real-Time ScribeConnect for Students with Disabilities Learning without Limits
+ScribeConnect: AI-Powered Real-Time ScribeConnect for Students with Disabilities Learning without Limits
 ## Quick Start
 
 You can easily set up and run the entire project (backend + frontend) using the provided scripts.

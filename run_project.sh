@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# ScribeAI One-Click Setup & Run Script (Mac/Linux)
+# ScribeConnect One-Click Setup & Run Script (Mac/Linux)
 
 echo "=========================================="
-echo "   ScribeAI - One-Click Setup & Run"
+echo "   ScribeConnect - One-Click Setup & Run"
 echo "=========================================="
 
 # Check for Node.js

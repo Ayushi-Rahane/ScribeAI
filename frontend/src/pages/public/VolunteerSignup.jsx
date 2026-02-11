@@ -157,7 +157,7 @@ const VolunteerSignup = () => {
                         </svg>
                     </div>
                     <h1 className="text-3xl font-bold text-[#111F35]">Volunteer Registration</h1>
-                    <p className="text-gray-500 mt-2">Join ScribeAI as a volunteer</p>
+                    <p className="text-gray-500 mt-2">Join ScribeConnect as a volunteer</p>
                 </div>
 
                 {/* Progress Stepper */}

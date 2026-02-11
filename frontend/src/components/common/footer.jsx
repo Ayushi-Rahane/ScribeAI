@@ -12,7 +12,7 @@ const Footer = () => {
                     {/* Brand */}
                     <div>
                         <div className="flex items-center gap-2 mb-4">
-                            <span className="text-xl font-bold text-white">ScribeAI</span>
+                            <span className="text-xl font-bold text-white">ScribeConnect</span>
                         </div>
                         <p className="text-sm text-gray-400 leading-relaxed">
                             AI-powered platform connecting students with disabilities to
@@ -76,7 +76,7 @@ const Footer = () => {
 
                 {/* Bottom Bar */}
                 <div className="border-t border-[#1b2b4d] pt-6 flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
-                    <p>© {new Date().getFullYear()} ScribeAI. All rights reserved.</p>
+                    <p>© {new Date().getFullYear()} ScribeConnect. All rights reserved.</p>
                     <p className="mt-2 md:mt-0">Built with ❤️ for accessible education</p>
                 </div>
 

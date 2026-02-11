@@ -83,7 +83,7 @@ const HowItWorksSection = () => {
                         <div className="bg-white p-6 rounded-2xl shadow-lg max-w-md w-full">
                             <img
                                 src="/how-it-works-illustration.png"
-                                alt="How ScribeAI Works"
+                                alt="How ScribeConnect Works"
                                 className="w-full h-auto"
                             />
                         </div>

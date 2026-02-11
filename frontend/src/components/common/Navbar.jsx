@@ -108,7 +108,7 @@ const Navbar = () => {
                             strokeWidth="1"></path>
                     </svg>
                     <span className="text-xl font-semibold text-[#F63049]">
-                        ScribeAI
+                        ScribeConnect
                     </span>
                 </Link>
 
